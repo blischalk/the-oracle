@@ -1,13 +1,16 @@
+/* Dungeon — Candlelight Parchment
+   Warm sepia tones like reading by torchlight. Old tome aesthetic.
+   Deep brown-blacks with aged gold accents. */
 .theme-dungeon {
-  --color-bg: #0d0d0d;
-  --color-surface: #1a1209;
-  --color-border: #4a3728;
-  --color-primary: #c8a96e;
-  --color-text: #d4c5a9;
-  --color-text-muted: #8a7a65;
-  --color-user-bubble: #2a1f15;
-  --color-assistant-bubble: #1a1209;
-  --font-body: 'Palatino Linotype', 'Palatino', serif;
-  --font-mono: 'Courier New', monospace;
+  --color-bg: #1c1410;
+  --color-surface: #261c12;
+  --color-border: #3d2e1e;
+  --color-primary: #d4a853;
+  --color-text: #f5ead8;
+  --color-text-muted: #b09060;
+  --color-user-bubble: #322518;
+  --color-assistant-bubble: #221a10;
+  --font-body: 'Palatino Linotype', 'Palatino', 'Georgia', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
   --border-radius: 0.25rem;
 }

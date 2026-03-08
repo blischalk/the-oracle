@@ -5,17 +5,22 @@ export function ThemeSelector() {
 
   return (
     <div>
-      <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-text)" }}>Theme</label>
-      <div className="grid grid-cols-3 gap-2">
+      <label className="oracle-label">Theme</label>
+      <div className="grid grid-cols-3 gap-2" style={{ marginTop: "var(--space-2)" }}>
         {themes.map((t) => (
           <button
             key={t.id}
-            className="py-2 px-3 text-xs text-center transition-all"
+            type="button"
+            className="text-center transition-all"
             style={{
+              padding: "var(--input-padding-y) var(--input-padding-x)",
+              fontSize: "0.8125rem",
+              lineHeight: "var(--line-height-tight)",
               border: `1px solid ${activeTheme === t.id ? "var(--color-primary)" : "var(--color-border)"}`,
               color: activeTheme === t.id ? "var(--color-primary)" : "var(--color-text-muted)",
               borderRadius: "var(--border-radius)",
               backgroundColor: activeTheme === t.id ? "var(--color-surface)" : "transparent",
+              cursor: "pointer",
             }}
             onClick={() => setTheme(t.id)}
           >

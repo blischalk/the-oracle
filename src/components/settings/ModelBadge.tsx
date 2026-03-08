@@ -10,8 +10,10 @@ export function ModelBadge() {
 
   return (
     <span
-      className="text-xs px-2 py-1 rounded"
+      className="rounded text-xs"
       style={{
+        padding: "var(--space-1) var(--space-2)",
+        lineHeight: "var(--line-height-tight)",
         backgroundColor: "var(--color-surface)",
         border: "1px solid var(--color-border)",
         color: "var(--color-text-muted)",

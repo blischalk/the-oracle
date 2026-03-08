@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(transparent)]
 pub struct CampaignId(pub String);
 
 impl CampaignId {
@@ -144,7 +145,10 @@ mod tests {
     fn message_role_round_trips_through_string() {
         use std::str::FromStr;
 
-        assert_eq!(MessageRole::from_str("system").unwrap(), MessageRole::System);
+        assert_eq!(
+            MessageRole::from_str("system").unwrap(),
+            MessageRole::System
+        );
         assert_eq!(MessageRole::from_str("user").unwrap(), MessageRole::User);
         assert_eq!(
             MessageRole::from_str("assistant").unwrap(),
@@ -163,9 +167,12 @@ mod tests {
 
     #[test]
     fn message_with_token_count_sets_field() {
-        let message =
-            Message::new("camp1".to_string(), MessageRole::Assistant, "Reply".to_string())
-                .with_token_count(42);
+        let message = Message::new(
+            "camp1".to_string(),
+            MessageRole::Assistant,
+            "Reply".to_string(),
+        )
+        .with_token_count(42);
 
         assert_eq!(message.token_count, Some(42));
     }

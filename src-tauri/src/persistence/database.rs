@@ -10,8 +10,8 @@ pub struct Database {
 
 impl Database {
     pub fn open(path: &str) -> anyhow::Result<Self> {
-        let connection = Connection::open(path)
-            .with_context(|| format!("Failed to open database at {path}"))?;
+        let connection =
+            Connection::open(path).with_context(|| format!("Failed to open database at {path}"))?;
 
         run_migrations(&connection)?;
 
@@ -90,9 +90,7 @@ mod tests {
 
         let table_names: Vec<String> = {
             let mut statement = connection
-                .prepare(
-                    "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-                )
+                .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
                 .unwrap();
 
             statement

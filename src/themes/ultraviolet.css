@@ -1,13 +1,16 @@
+/* Ultraviolet Grasslands — Psychedelic Steppe
+   Deep indigo night sky with soft violet light. Strange and beautiful,
+   not eye-straining. Like stargazing on an alien plateau. */
 .theme-ultraviolet {
-  --color-bg: #0d001a;
-  --color-surface: #1a0033;
-  --color-border: #9900ff;
-  --color-primary: #cc00ff;
-  --color-text: #e8ccff;
-  --color-text-muted: #9966cc;
-  --color-user-bubble: #2d0044;
-  --color-assistant-bubble: #1a0033;
-  --font-body: 'Trebuchet MS', sans-serif;
-  --font-mono: 'Courier New', monospace;
+  --color-bg: #0f0822;
+  --color-surface: #170f35;
+  --color-border: #2a1a5e;
+  --color-primary: #b06ef7;
+  --color-text: #ede6ff;
+  --color-text-muted: #9d7fd4;
+  --color-user-bubble: #231550;
+  --color-assistant-bubble: #130b30;
+  --font-body: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Courier New', Consolas, monospace;
   --border-radius: 0.75rem;
 }

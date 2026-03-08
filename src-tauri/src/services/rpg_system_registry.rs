@@ -17,8 +17,9 @@ impl RpgSystemRegistry {
             return Ok(Self { systems });
         }
 
-        let entries = std::fs::read_dir(systems_directory)
-            .with_context(|| format!("Failed to read rpg-systems directory: {systems_directory:?}"))?;
+        let entries = std::fs::read_dir(systems_directory).with_context(|| {
+            format!("Failed to read rpg-systems directory: {systems_directory:?}")
+        })?;
 
         for entry in entries {
             let entry = entry.context("Failed to read directory entry")?;

@@ -1,12 +1,17 @@
 use std::sync::Arc;
 
-use crate::domain::campaign::{Campaign, Message};
+use crate::domain::campaign::{Campaign, CampaignState, Message};
 use crate::domain::rpg_system::RpgSystem;
 use crate::persistence::campaign_repository::{CampaignRepository, MessageRepository};
 use crate::providers::llm_provider::ChatMessage;
 use crate::services::rpg_system_registry::RpgSystemRegistry;
 
 const MAX_CONTEXT_MESSAGES: usize = 20;
+
+pub enum GreetingKind {
+    NewCampaign,
+    ResumeCampaign,
+}
 
 pub struct CampaignService {
     campaign_repository: Arc<CampaignRepository>,
@@ -27,11 +32,7 @@ impl CampaignService {
         }
     }
 
-    pub fn create_campaign(
-        &self,
-        name: &str,
-        rpg_system_id: &str,
-    ) -> anyhow::Result<Campaign> {
+    pub fn create_campaign(&self, name: &str, rpg_system_id: &str) -> anyhow::Result<Campaign> {
         let campaign = Campaign::created_now(name.to_string(), rpg_system_id.to_string());
         self.campaign_repository.create(&campaign)?;
         Ok(campaign)
@@ -49,12 +50,31 @@ impl CampaignService {
         self.campaign_repository.archive(id)
     }
 
+    /// Permanently deletes a campaign and all its messages and state.
+    pub fn delete_campaign(&self, id: &str) -> anyhow::Result<()> {
+        self.campaign_repository.delete(id)
+    }
+
+    pub fn update_campaign_name(&self, id: &str, name: &str) -> anyhow::Result<()> {
+        self.campaign_repository.update_name(id, name)
+    }
+
     pub fn save_message(&self, message: &Message) -> anyhow::Result<()> {
         self.message_repository.save(message)
     }
 
     pub fn get_messages(&self, campaign_id: &str) -> anyhow::Result<Vec<Message>> {
         self.message_repository.find_by_campaign(campaign_id)
+    }
+
+    pub fn get_campaign_state(&self, campaign_id: &str) -> anyhow::Result<CampaignState> {
+        self.campaign_repository
+            .find_state(campaign_id)
+            .map(|opt| opt.unwrap_or_else(|| CampaignState::empty_for_campaign(campaign_id.to_string())))
+    }
+
+    pub fn save_campaign_state(&self, state: &CampaignState) -> anyhow::Result<()> {
+        self.campaign_repository.save_state(state)
     }
 
     pub fn build_llm_context(
@@ -66,7 +86,70 @@ impl CampaignService {
         let recent_messages = take_last_n_messages(all_messages, MAX_CONTEXT_MESSAGES);
 
         let mut context = vec![system_message_for(rpg_system)];
-        context.extend(recent_messages.into_iter().map(domain_message_to_chat_message));
+        context.extend(
+            recent_messages
+                .into_iter()
+                .map(domain_message_to_chat_message),
+        );
+
+        Ok(context)
+    }
+
+    /// Builds context for a GM greeting: new campaign (character creation) or resume (recap + next decision).
+    pub fn build_greeting_context(
+        &self,
+        campaign_id: &str,
+        rpg_system: &RpgSystem,
+        kind: GreetingKind,
+    ) -> anyhow::Result<Vec<ChatMessage>> {
+        let mut context = vec![system_message_for(rpg_system)];
+
+        let instruction = match kind {
+            GreetingKind::NewCampaign => {
+                "A new campaign is beginning. Start character creation RIGHT NOW in this message — do not ask \
+                 the player what they would like to do or what kind of adventure they want. \
+                 \
+                 Follow this exact sequence: \
+                 1. Ask the player what they would like to name their character. This is ALWAYS the first question. \
+                 2. Walk them through any remaining creation steps for this system (background, stats, equipment). \
+                    Roll or assign values yourself where the rules allow — do not make the player do math. \
+                    Present results narratively (e.g. 'Your hands are strong — STR 14'). \
+                 3. Once the character has a name and their core attributes, immediately set the opening scene. \
+                    Describe WHERE the character is, WHAT they can see, hear, and feel right now, and \
+                    WHAT is immediately happening around them. Make it specific and vivid. \
+                    End with a concrete situation that demands a response — not an open question like \
+                    'what do you do?' in isolation, but a scene so alive the player KNOWS what they're reacting to. \
+                 \
+                 You are the author of this world. The player reacts to what you create. \
+                 Deliver the first step of this sequence now."
+            }
+            GreetingKind::ResumeCampaign => {
+                "The player has returned to this campaign. Give a SHORT, vivid recap (2–4 sentences) of \
+                 where the story left off — what happened, where the character is, what is at stake. \
+                 Then drop them straight back into the action: describe the scene as it stands RIGHT NOW \
+                 and present the immediate situation in front of them. \
+                 Do NOT ask 'what would you like to do?' in isolation. Present the world; let the player react. \
+                 Deliver this in one message now."
+            }
+        };
+
+        match kind {
+            GreetingKind::NewCampaign => {
+                context.push(ChatMessage {
+                    role: "user".to_string(),
+                    content: instruction.to_string(),
+                });
+            }
+            GreetingKind::ResumeCampaign => {
+                let all_messages = self.message_repository.find_by_campaign(campaign_id)?;
+                let recent = take_last_n_messages(all_messages, MAX_CONTEXT_MESSAGES);
+                context.extend(recent.into_iter().map(domain_message_to_chat_message));
+                context.push(ChatMessage {
+                    role: "user".to_string(),
+                    content: instruction.to_string(),
+                });
+            }
+        }
 
         Ok(context)
     }
@@ -87,7 +170,14 @@ fn take_last_n_messages(messages: Vec<Message>, count: usize) -> Vec<Message> {
     if messages.len() <= count {
         messages
     } else {
-        messages.into_iter().rev().take(count).collect::<Vec<_>>().into_iter().rev().collect()
+        messages
+            .into_iter()
+            .rev()
+            .take(count)
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+            .collect()
     }
 }
 
@@ -108,7 +198,8 @@ mod tests {
         let database = Database::open_in_memory().unwrap();
         let campaign_repo = Arc::new(CampaignRepository::new(database.connection.clone()));
         let message_repo = Arc::new(MessageRepository::new(database.connection.clone()));
-        let registry = Arc::new(RpgSystemRegistry::load(std::path::Path::new("/nonexistent")).unwrap());
+        let registry =
+            Arc::new(RpgSystemRegistry::load(std::path::Path::new("/nonexistent")).unwrap());
 
         CampaignService::new(campaign_repo, message_repo, registry)
     }

@@ -38,8 +38,8 @@ mod tests {
 
     fn build_service() -> SettingsService {
         let database = Database::open_in_memory().unwrap();
-        let settings_repo = Arc::new(SettingsRepository::new(database.connection));
-        let keychain = Arc::new(KeychainService::new());
+        let settings_repo = Arc::new(SettingsRepository::new(database.connection.clone()));
+        let keychain = Arc::new(KeychainService::new(database.connection));
         SettingsService::new(settings_repo, keychain)
     }
 

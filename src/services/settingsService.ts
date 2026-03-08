@@ -10,13 +10,13 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
 }
 
 export async function saveApiKey(provider_id: string, key: string): Promise<void> {
-  return invoke("save_api_key", { provider_id, key });
+  return invoke("save_api_key", { providerId: provider_id, key });
 }
 
 export async function getApiKey(provider_id: string): Promise<string | null> {
-  return invoke("get_api_key", { provider_id });
+  return invoke("get_api_key", { providerId: provider_id });
 }
 
 export async function deleteApiKey(provider_id: string): Promise<void> {
-  return invoke("delete_api_key", { provider_id });
+  return invoke("delete_api_key", { providerId: provider_id });
 }

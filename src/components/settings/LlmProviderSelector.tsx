@@ -1,5 +1,6 @@
 import { useSettingsStore } from "../../stores/settingsStore";
 import { ApiKeyForm } from "./ApiKeyForm";
+import { ThemedSelect } from "../ui/ThemedSelect";
 
 export function LlmProviderSelector() {
   const { settings, providers, updateSettings } = useSettingsStore();
@@ -8,44 +9,32 @@ export function LlmProviderSelector() {
 
   return (
     <div>
-      <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-text)" }}>LLM Provider</label>
-      <select
-        className="w-full p-2 mb-4 text-sm focus:outline-none"
-        style={{
-          backgroundColor: "var(--color-bg)",
-          border: "1px solid var(--color-border)",
-          color: "var(--color-text)",
-          borderRadius: "var(--border-radius)",
-        }}
-        value={settings.active_provider_id}
-        onChange={(e) => updateSettings({ active_provider_id: e.target.value, active_model_id: providers.find(p => p.id === e.target.value)?.models[0]?.id ?? "" })}
-      >
-        {providers.map((p) => (
-          <option key={p.id} value={p.id}>{p.display_name}</option>
-        ))}
-      </select>
+      <div className="oracle-form-group">
+        <label className="oracle-label" htmlFor="llm-provider">LLM Provider</label>
+        <ThemedSelect
+          id="llm-provider"
+          options={providers.map((p) => ({ value: p.id, label: p.display_name }))}
+          value={settings.active_provider_id}
+          onChange={(val) => updateSettings({ active_provider_id: val, active_model_id: providers.find(p => p.id === val)?.models[0]?.id ?? "" })}
+        />
+      </div>
 
       {activeProvider && (
         <>
-          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-text)" }}>Model</label>
-          <select
-            className="w-full p-2 mb-4 text-sm focus:outline-none"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-text)",
-              borderRadius: "var(--border-radius)",
-            }}
-            value={settings.active_model_id}
-            onChange={(e) => updateSettings({ active_model_id: e.target.value })}
-          >
-            {activeProvider.models.map((m) => (
-              <option key={m.id} value={m.id}>{m.display_name}</option>
-            ))}
-          </select>
+          <div className="oracle-form-group">
+            <label className="oracle-label" htmlFor="model">Model</label>
+            <ThemedSelect
+              id="model"
+              options={activeProvider.models.map((m) => ({ value: m.id, label: m.display_name }))}
+              value={settings.active_model_id}
+              onChange={(val) => updateSettings({ active_model_id: val })}
+            />
+          </div>
 
-          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-text)" }}>API Key</label>
-          <ApiKeyForm providerId={settings.active_provider_id} />
+          <div className="oracle-form-group">
+            <label className="oracle-label" htmlFor="api-key">API Key</label>
+            <ApiKeyForm providerId={settings.active_provider_id} />
+          </div>
         </>
       )}
     </div>

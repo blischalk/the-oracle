@@ -6,6 +6,27 @@
 @import "./themes/electric.css";
 @import "./themes/cosmos.css";
 
+/* Design tokens for consistent spacing and typography */
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --input-padding-x: 0.875rem;
+  --input-padding-y: 0.625rem;
+  --button-padding-x: 1.25rem;
+  --button-padding-y: 0.625rem;
+  --line-height-tight: 1.35;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.75;
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,8 +37,197 @@ html, body, #root {
   height: 100%;
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-body, Georgia, serif);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Base form controls: comfortable padding and readable typography */
+input.oracle-input,
+select.oracle-input,
+textarea.oracle-input {
+  padding: var(--input-padding-y) var(--input-padding-x);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  border-radius: var(--border-radius);
+}
+
+.oracle-btn {
+  padding: var(--button-padding-y) var(--button-padding-x) !important;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.oracle-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.oracle-btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.oracle-btn-secondary:hover {
+  color: var(--color-text);
+  opacity: 0.9;
+}
+
+.oracle-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.oracle-form-group {
+  margin-bottom: var(--space-5);
+}
+
+.oracle-form-group:last-of-type {
+  margin-bottom: var(--space-6);
+}
+
+/* Prose and chat content: comfortable reading and spacing */
+p,
+.oracle-prose {
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* Prose spacing: headings, rules, and text elements */
+.oracle-prose p {
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+}
+.oracle-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.oracle-prose h1,
+.oracle-prose h2,
+.oracle-prose h3,
+.oracle-prose h4,
+.oracle-prose h5,
+.oracle-prose h6 {
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+}
+.oracle-prose h1:first-child,
+.oracle-prose h2:first-child,
+.oracle-prose h3:first-child,
+.oracle-prose h4:first-child,
+.oracle-prose h5:first-child,
+.oracle-prose h6:first-child {
+  margin-top: 0;
+}
+.oracle-prose h1 { font-size: 1.5rem; }
+.oracle-prose h2 { font-size: 1.25rem; }
+.oracle-prose h3 { font-size: 1.125rem; }
+.oracle-prose h4,
+.oracle-prose h5,
+.oracle-prose h6 { font-size: 1rem; }
+
+.oracle-prose hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.oracle-prose ul,
+.oracle-prose ol {
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-6);
+}
+.oracle-prose li {
+  margin-bottom: var(--space-2);
+}
+.oracle-prose li:last-child {
+  margin-bottom: 0;
+}
+
+.oracle-prose blockquote {
+  border-left: 4px solid var(--color-primary);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.oracle-prose pre,
+.oracle-prose code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875em;
+}
+.oracle-prose pre {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  overflow-x: auto;
+  border-radius: var(--border-radius);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+}
+.oracle-prose :not(pre) > code {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--border-radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.oracle-prose strong {
+  font-weight: 600;
+}
+.oracle-prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.oracle-prose a:hover {
+  opacity: 0.9;
+}
+
+.oracle-prose table {
+  width: 100%;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-collapse: collapse;
+}
+.oracle-prose th,
+.oracle-prose td {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+.oracle-prose th {
+  font-weight: 600;
+  background: var(--color-surface);
+}
+
+/* Focus ring for form controls (theme-aware) */
+input.oracle-input:focus,
+select.oracle-input:focus,
+textarea.oracle-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
 }
 
 ::-webkit-scrollbar {

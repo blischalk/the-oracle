@@ -88,11 +88,7 @@ fn filter_to_conversation_messages(messages: Vec<ChatMessage>) -> Vec<AnthropicM
         .collect()
 }
 
-fn build_request(
-    model_id: &str,
-    messages: Vec<ChatMessage>,
-    max_tokens: u32,
-) -> AnthropicRequest {
+fn build_request(model_id: &str, messages: Vec<ChatMessage>, max_tokens: u32) -> AnthropicRequest {
     let system_prompt = extract_system_prompt(&messages);
     let conversation_messages = filter_to_conversation_messages(messages);
 
@@ -202,7 +198,11 @@ impl LlmProvider for AnthropicProvider {
             content: "Hi".to_string(),
         }];
 
-        let request_body = build_request("claude-haiku-4-5", validation_messages, VALIDATION_MAX_TOKENS);
+        let request_body = build_request(
+            "claude-haiku-4-5",
+            validation_messages,
+            VALIDATION_MAX_TOKENS,
+        );
 
         let http_response = self
             .client
@@ -218,14 +218,22 @@ impl LlmProvider for AnthropicProvider {
         let status = http_response.status();
 
         if status == reqwest::StatusCode::UNAUTHORIZED {
-            return Ok(false);
+            let body = http_response.text().await.unwrap_or_default();
+            let message = if body.is_empty() {
+                "Invalid API key. Check the key at console.anthropic.com or try generating a new one."
+                    .to_string()
+            } else {
+                format!("Invalid API key: {body}")
+            };
+            return Err(LlmError::ProviderError(message));
         }
 
         if status.is_success() {
             return Ok(true);
         }
 
-        Err(LlmError::ProviderError(format!("HTTP {status}")))
+        let body = http_response.text().await.unwrap_or_default();
+        Err(LlmError::ProviderError(format!("HTTP {status}: {body}")))
     }
 }
 

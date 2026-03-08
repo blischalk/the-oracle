@@ -3,9 +3,15 @@ export interface OpeningHook {
   description: string;
 }
 
+export type FieldType =
+  | { type: "Text" }
+  | { type: "Number" }
+  | { type: "Boolean" }
+  | { type: "Select"; options: string[] };
+
 export interface CharacterField {
   name: string;
-  field_type: string;
+  field_type: FieldType;
   label: string;
   default_value?: unknown;
 }

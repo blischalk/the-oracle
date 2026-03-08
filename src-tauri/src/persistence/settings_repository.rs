@@ -31,14 +31,13 @@ impl SettingsRepository {
 
         let theme = read_key(&connection, KEY_THEME)?.unwrap_or(defaults.theme);
 
-        let is_fullscreen_str =
-            read_key(&connection, KEY_IS_FULLSCREEN)?.unwrap_or_else(|| {
-                if defaults.is_fullscreen {
-                    "true".to_string()
-                } else {
-                    "false".to_string()
-                }
-            });
+        let is_fullscreen_str = read_key(&connection, KEY_IS_FULLSCREEN)?.unwrap_or_else(|| {
+            if defaults.is_fullscreen {
+                "true".to_string()
+            } else {
+                "false".to_string()
+            }
+        });
 
         let is_fullscreen = is_fullscreen_str == "true";
 
@@ -53,13 +52,21 @@ impl SettingsRepository {
     pub fn save(&self, settings: &AppSettings) -> anyhow::Result<()> {
         let connection = self.connection.lock().unwrap();
 
-        upsert_key(&connection, KEY_ACTIVE_PROVIDER_ID, &settings.active_provider_id)?;
+        upsert_key(
+            &connection,
+            KEY_ACTIVE_PROVIDER_ID,
+            &settings.active_provider_id,
+        )?;
         upsert_key(&connection, KEY_ACTIVE_MODEL_ID, &settings.active_model_id)?;
         upsert_key(&connection, KEY_THEME, &settings.theme)?;
         upsert_key(
             &connection,
             KEY_IS_FULLSCREEN,
-            if settings.is_fullscreen { "true" } else { "false" },
+            if settings.is_fullscreen {
+                "true"
+            } else {
+                "false"
+            },
         )?;
 
         Ok(())

@@ -23,8 +23,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   isLoaded: false,
 
   loadSettings: async () => {
-    const settings = await settingsService.getSettings();
-    set({ settings, isLoaded: true });
+    try {
+      const settings = await settingsService.getSettings();
+      set({ settings, isLoaded: true });
+    } catch {
+      set({ isLoaded: true });
+    }
   },
 
   updateSettings: async (partial: Partial<AppSettings>) => {

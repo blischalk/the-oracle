@@ -24,18 +24,22 @@ export function MessageInput({ onSubmit, disabled }: Props) {
 
   return (
     <div
-      className="flex gap-2 p-4"
-      style={{ borderTop: "1px solid var(--color-border)", backgroundColor: "var(--color-surface)" }}
+      className="flex gap-3"
+      style={{
+        padding: "var(--space-4)",
+        borderTop: "1px solid var(--color-border)",
+        backgroundColor: "var(--color-surface)",
+        alignItems: "flex-end",
+      }}
     >
       <textarea
-        className="flex-1 resize-none rounded p-2 text-sm focus:outline-none"
+        className="oracle-input flex-1 resize-none min-w-0 focus:outline-none"
         style={{
           backgroundColor: "var(--color-bg)",
           border: "1px solid var(--color-border)",
           color: "var(--color-text)",
           fontFamily: "var(--font-body)",
-          borderRadius: "var(--border-radius)",
-          minHeight: "2.5rem",
+          minHeight: "2.75rem",
           maxHeight: "8rem",
         }}
         placeholder="What do you do?"
@@ -46,13 +50,12 @@ export function MessageInput({ onSubmit, disabled }: Props) {
         rows={2}
       />
       <button
-        className="px-4 py-2 font-semibold text-sm transition-opacity"
+        type="button"
+        className="oracle-btn shrink-0"
         style={{
           backgroundColor: "var(--color-primary)",
           color: "var(--color-bg)",
-          borderRadius: "var(--border-radius)",
           opacity: disabled ? 0.5 : 1,
-          cursor: disabled ? "not-allowed" : "pointer",
         }}
         onClick={submit}
         disabled={disabled}

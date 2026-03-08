@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-rpg-system"
+description = "Enables the get_rpg_system command without any pre-configured scope."
+commands.allow = ["get_rpg_system"]
+
+[[permission]]
+identifier = "deny-get-rpg-system"
+description = "Denies the get_rpg_system command without any pre-configured scope."
+commands.deny = ["get_rpg_system"]

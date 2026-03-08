@@ -8,17 +8,15 @@ pub fn save_api_key(
     key: String,
     state: State<AppState>,
 ) -> Result<(), String> {
+    let key = key.trim();
     state
         .keychain_service
-        .save_api_key(&provider_id, &key)
+        .save_api_key(&provider_id, key)
         .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn get_api_key(
-    provider_id: String,
-    state: State<AppState>,
-) -> Result<Option<String>, String> {
+pub fn get_api_key(provider_id: String, state: State<AppState>) -> Result<Option<String>, String> {
     state
         .keychain_service
         .get_api_key(&provider_id)

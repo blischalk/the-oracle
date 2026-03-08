@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-campaign-state"
+description = "Enables the get_campaign_state command without any pre-configured scope."
+commands.allow = ["get_campaign_state"]
+
+[[permission]]
+identifier = "deny-get-campaign-state"
+description = "Denies the get_campaign_state command without any pre-configured scope."
+commands.deny = ["get_campaign_state"]

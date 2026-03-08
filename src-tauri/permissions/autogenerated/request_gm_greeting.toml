@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-request-gm-greeting"
+description = "Enables the request_gm_greeting command without any pre-configured scope."
+commands.allow = ["request_gm_greeting"]
+
+[[permission]]
+identifier = "deny-request-gm-greeting"
+description = "Denies the request_gm_greeting command without any pre-configured scope."
+commands.deny = ["request_gm_greeting"]

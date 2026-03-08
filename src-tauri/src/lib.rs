@@ -1,13 +1,18 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use tauri::path::BaseDirectory;
 use tauri::Manager;
 
 use commands::campaign_commands::{
-    archive_campaign, create_campaign, get_campaign, get_messages, list_campaigns,
+    archive_campaign, create_campaign, delete_campaign, get_campaign, get_campaign_state,
+    get_messages, get_rpg_system, list_campaigns, update_campaign_name,
 };
 use commands::keychain_commands::{delete_api_key, get_api_key, save_api_key};
-use commands::llm_commands::{list_providers, send_chat_message, validate_api_key};
+use commands::llm_commands::{
+    extract_character_data, list_providers, request_gm_greeting, send_chat_message,
+    suggest_campaign_name, validate_api_key,
+};
 use commands::settings_commands::{get_settings, save_settings};
 
 use keychain::keychain_service::KeychainService;
@@ -37,6 +42,7 @@ pub struct AppState {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_state = build_app_state(app.handle())?;
@@ -47,9 +53,16 @@ pub fn run() {
             list_campaigns,
             create_campaign,
             get_campaign,
+            get_campaign_state,
+            get_rpg_system,
             archive_campaign,
+            delete_campaign,
+            update_campaign_name,
             get_messages,
             send_chat_message,
+            request_gm_greeting,
+            extract_character_data,
+            suggest_campaign_name,
             list_providers,
             validate_api_key,
             get_settings,
@@ -71,7 +84,7 @@ fn build_app_state(app_handle: &tauri::AppHandle) -> anyhow::Result<AppState> {
 
     let rpg_registry = Arc::new(load_rpg_registry(app_handle));
 
-    let keychain_service = Arc::new(KeychainService::new());
+    let keychain_service = Arc::new(KeychainService::new(database.connection.clone()));
 
     let campaign_service = Arc::new(CampaignService::new(
         campaign_repository,
@@ -108,15 +121,29 @@ fn open_application_database(app_handle: &tauri::AppHandle) -> anyhow::Result<Da
 }
 
 fn load_rpg_registry(app_handle: &tauri::AppHandle) -> RpgSystemRegistry {
-    let resource_directory = app_handle
+    // Prefer bundled resource path (works in production and dev when resources are copied)
+    let systems_directory = app_handle
         .path()
-        .resource_dir()
-        .unwrap_or_else(|_| PathBuf::from("."));
+        .resolve("rpg-systems", BaseDirectory::Resource)
+        .ok()
+        .filter(|p| p.exists());
 
-    let systems_directory = resource_directory.join("rpg-systems");
+    let systems_directory = systems_directory.or_else(|| {
+        // Dev fallback: rpg-systems next to the crate (project root)
+        let dev_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join("rpg-systems");
+        if dev_path.exists() {
+            Some(dev_path)
+        } else {
+            None
+        }
+    });
 
-    RpgSystemRegistry::load(&systems_directory).unwrap_or_else(|error| {
+    let systems_directory = systems_directory.unwrap_or_else(|| PathBuf::from("."));
+
+    RpgSystemRegistry::load(systems_directory.as_path()).unwrap_or_else(|error| {
         eprintln!("Warning: could not load RPG systems from {systems_directory:?}: {error}");
-        RpgSystemRegistry::load(std::path::Path::new("/nonexistent")).unwrap()
+        RpgSystemRegistry::load(Path::new("/nonexistent")).unwrap()
     })
 }

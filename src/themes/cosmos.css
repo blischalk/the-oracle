@@ -1,13 +1,16 @@
+/* Cosmos — Deep Space Atlas
+   Midnight blue-black with soft starlight. Calm and expansive,
+   like charting a course across crystal spheres. */
 .theme-cosmos {
-  --color-bg: #04071a;
-  --color-surface: #0a1030;
-  --color-border: #2244aa;
-  --color-primary: #6699ff;
-  --color-text: #cce0ff;
-  --color-text-muted: #6688bb;
-  --color-user-bubble: #0d1a44;
-  --color-assistant-bubble: #0a1030;
-  --font-body: 'Georgia', serif;
-  --font-mono: 'Courier New', monospace;
+  --color-bg: #080c1a;
+  --color-surface: #0e1530;
+  --color-border: #1a2a55;
+  --color-primary: #7eb8ff;
+  --color-text: #dce8ff;
+  --color-text-muted: #8aa8d4;
+  --color-user-bubble: #142248;
+  --color-assistant-bubble: #0c1228;
+  --font-body: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
   --border-radius: 1rem;
 }

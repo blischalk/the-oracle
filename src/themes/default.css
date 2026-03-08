@@ -1,13 +1,16 @@
+/* Default — Deep Ink
+   Sophisticated dark interface with indigo and soft rose accents.
+   Comfortable for long reading sessions. */
 .theme-default {
-  --color-bg: #1a1a2e;
-  --color-surface: #16213e;
-  --color-border: #0f3460;
-  --color-primary: #e94560;
-  --color-text: #eaeaea;
-  --color-text-muted: #a0a0b0;
-  --color-user-bubble: #0f3460;
-  --color-assistant-bubble: #16213e;
-  --font-body: 'Georgia', serif;
-  --font-mono: 'Courier New', monospace;
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-border: #374151;
+  --color-primary: #818cf8;
+  --color-text: #f9fafb;
+  --color-text-muted: #9ca3af;
+  --color-user-bubble: #2d3a52;
+  --color-assistant-bubble: #1f2937;
+  --font-body: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
   --border-radius: 0.5rem;
 }

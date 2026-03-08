@@ -58,8 +58,8 @@ pnpm-debug.log*
 # Vite / Vitest cache (when not under node_modules)
 .vitest/
 
-# Optional: local SQLite DBs if created in project dir
-# *.db
-# *.db-journal
-# *.db-wal
-# *.db-shm
+# SQLite (runtime DB lives in OS app data dir, but ignore any that appear locally)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

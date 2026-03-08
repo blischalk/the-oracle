@@ -2,11 +2,10 @@ import { useEffect } from "react";
 import { useCampaignStore } from "../stores/campaignStore";
 
 export function useCampaigns() {
-  const store = useCampaignStore();
-
   useEffect(() => {
-    store.loadCampaigns();
+    // Use getState() so we always call the current loadCampaigns (avoids stale closure)
+    useCampaignStore.getState().loadCampaigns();
   }, []);
 
-  return store;
+  return useCampaignStore();
 }

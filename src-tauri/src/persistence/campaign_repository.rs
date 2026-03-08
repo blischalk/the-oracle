@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Context;
 use rusqlite::{params, Connection};
 
-use crate::domain::campaign::{Campaign, CampaignId, Message, MessageRole};
+use crate::domain::campaign::{Campaign, CampaignId, CampaignState, Message, MessageRole};
 
 pub struct CampaignRepository {
     connection: Arc<Mutex<Connection>>,
@@ -81,6 +81,110 @@ impl CampaignRepository {
             .context("Failed to archive campaign")?;
         Ok(())
     }
+
+    /// Permanently deletes a campaign and all its messages and state.
+    pub fn delete(&self, id: &str) -> anyhow::Result<()> {
+        let mut connection = self.connection.lock().unwrap();
+        let tx = connection
+            .transaction()
+            .context("Failed to start transaction")?;
+        tx.execute("DELETE FROM messages WHERE campaign_id = ?1", params![id])
+            .context("Failed to delete campaign messages")?;
+        if let Err(e) = tx.execute(
+            "DELETE FROM campaign_state WHERE campaign_id = ?1",
+            params![id],
+        ) {
+            let msg = e.to_string();
+            if !msg.contains("no such table") {
+                return Err(e.into());
+            }
+        }
+        tx.execute("DELETE FROM campaigns WHERE id = ?1", params![id])
+            .context("Failed to delete campaign")?;
+        tx.commit().context("Failed to commit delete transaction")?;
+        Ok(())
+    }
+
+    pub fn update_name(&self, id: &str, name: &str) -> anyhow::Result<()> {
+        let connection = self.connection.lock().unwrap();
+        let updated_at = chrono::Utc::now().to_rfc3339();
+        connection
+            .execute(
+                "UPDATE campaigns SET name = ?1, updated_at = ?2 WHERE id = ?3",
+                params![name, updated_at, id],
+            )
+            .context("Failed to update campaign name")?;
+        Ok(())
+    }
+
+    pub fn find_state(&self, campaign_id: &str) -> anyhow::Result<Option<CampaignState>> {
+        let connection = self.connection.lock().unwrap();
+        let mut statement = connection
+            .prepare(
+                "SELECT campaign_id, character_data, notes, updated_at
+                 FROM campaign_state WHERE campaign_id = ?1",
+            )
+            .context("Failed to prepare find_state statement")?;
+
+        let mut rows = statement
+            .query_map(params![campaign_id], row_to_campaign_state)
+            .context("Failed to query campaign state")?;
+
+        match rows.next() {
+            Some(result) => Ok(Some(result.context("Failed to map campaign state row")?)),
+            None => Ok(None),
+        }
+    }
+
+    pub fn save_state(&self, state: &CampaignState) -> anyhow::Result<()> {
+        let connection = self.connection.lock().unwrap();
+        let character_data_json =
+            serde_json::to_string(&state.character_data).context("Failed to serialize character_data")?;
+        connection
+            .execute(
+                "INSERT INTO campaign_state (campaign_id, character_data, notes, updated_at)
+                 VALUES (?1, ?2, ?3, ?4)
+                 ON CONFLICT(campaign_id) DO UPDATE SET
+                   character_data = excluded.character_data,
+                   notes = excluded.notes,
+                   updated_at = excluded.updated_at",
+                params![
+                    state.campaign_id,
+                    character_data_json,
+                    state.notes,
+                    state.updated_at.to_rfc3339(),
+                ],
+            )
+            .context("Failed to save campaign state")?;
+        Ok(())
+    }
+}
+
+fn row_to_campaign_state(row: &rusqlite::Row<'_>) -> rusqlite::Result<CampaignState> {
+    let campaign_id: String = row.get(0)?;
+    let character_data_str: String = row.get(1)?;
+    let notes: String = row.get(2)?;
+    let updated_at_str: String = row.get(3)?;
+
+    let character_data: serde_json::Value = serde_json::from_str(&character_data_str)
+        .unwrap_or_else(|_| serde_json::Value::Object(serde_json::Map::new()));
+
+    let updated_at = chrono::DateTime::parse_from_rfc3339(&updated_at_str)
+        .map(|dt| dt.with_timezone(&chrono::Utc))
+        .map_err(|_| {
+            rusqlite::Error::InvalidColumnType(
+                3,
+                "updated_at".to_string(),
+                rusqlite::types::Type::Text,
+            )
+        })?;
+
+    Ok(CampaignState {
+        campaign_id,
+        character_data,
+        notes,
+        updated_at,
+    })
 }
 
 fn row_to_campaign(row: &rusqlite::Row<'_>) -> rusqlite::Result<Campaign> {
@@ -93,11 +197,23 @@ fn row_to_campaign(row: &rusqlite::Row<'_>) -> rusqlite::Result<Campaign> {
 
     let created_at = chrono::DateTime::parse_from_rfc3339(&created_at_str)
         .map(|dt| dt.with_timezone(&chrono::Utc))
-        .map_err(|_| rusqlite::Error::InvalidColumnType(3, "created_at".to_string(), rusqlite::types::Type::Text))?;
+        .map_err(|_| {
+            rusqlite::Error::InvalidColumnType(
+                3,
+                "created_at".to_string(),
+                rusqlite::types::Type::Text,
+            )
+        })?;
 
     let updated_at = chrono::DateTime::parse_from_rfc3339(&updated_at_str)
         .map(|dt| dt.with_timezone(&chrono::Utc))
-        .map_err(|_| rusqlite::Error::InvalidColumnType(4, "updated_at".to_string(), rusqlite::types::Type::Text))?;
+        .map_err(|_| {
+            rusqlite::Error::InvalidColumnType(
+                4,
+                "updated_at".to_string(),
+                rusqlite::types::Type::Text,
+            )
+        })?;
 
     Ok(Campaign {
         id: CampaignId(id),
@@ -184,7 +300,11 @@ fn row_to_message(row: &rusqlite::Row<'_>) -> rusqlite::Result<Message> {
     let created_at = chrono::DateTime::parse_from_rfc3339(&created_at_str)
         .map(|dt| dt.with_timezone(&chrono::Utc))
         .map_err(|_| {
-            rusqlite::Error::InvalidColumnType(4, "created_at".to_string(), rusqlite::types::Type::Text)
+            rusqlite::Error::InvalidColumnType(
+                4,
+                "created_at".to_string(),
+                rusqlite::types::Type::Text,
+            )
         })?;
 
     Ok(Message {
@@ -265,9 +385,7 @@ mod tests {
         );
         message_repo.save(&message).unwrap();
 
-        let found = message_repo
-            .find_by_campaign(&campaign.id.0)
-            .unwrap();
+        let found = message_repo.find_by_campaign(&campaign.id.0).unwrap();
 
         assert_eq!(found.len(), 1);
         assert_eq!(found[0].content, "Hello, Oracle.");

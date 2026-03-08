@@ -1,6 +1,6 @@
 use tauri::State;
 
-use crate::domain::campaign::{Campaign, Message};
+use crate::domain::campaign::{Campaign, CampaignState, Message};
 use crate::AppState;
 
 #[tauri::command]
@@ -24,10 +24,7 @@ pub fn create_campaign(
 }
 
 #[tauri::command]
-pub fn get_campaign(
-    id: String,
-    state: State<AppState>,
-) -> Result<Option<Campaign>, String> {
+pub fn get_campaign(id: String, state: State<AppState>) -> Result<Option<Campaign>, String> {
     state
         .campaign_service
         .get_campaign(&id)
@@ -43,12 +40,52 @@ pub fn archive_campaign(id: String, state: State<AppState>) -> Result<(), String
 }
 
 #[tauri::command]
-pub fn get_messages(
-    campaign_id: String,
+pub fn delete_campaign(id: String, state: State<AppState>) -> Result<(), String> {
+    state
+        .campaign_service
+        .delete_campaign(&id)
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn update_campaign_name(
+    id: String,
+    name: String,
     state: State<AppState>,
-) -> Result<Vec<Message>, String> {
+) -> Result<(), String> {
+    let name = name.trim();
+    if name.is_empty() {
+        return Err("Campaign name cannot be empty".to_string());
+    }
+    state
+        .campaign_service
+        .update_campaign_name(&id, name)
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn get_messages(campaign_id: String, state: State<AppState>) -> Result<Vec<Message>, String> {
     state
         .campaign_service
         .get_messages(&campaign_id)
         .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn get_campaign_state(
+    campaign_id: String,
+    state: State<AppState>,
+) -> Result<CampaignState, String> {
+    state
+        .campaign_service
+        .get_campaign_state(&campaign_id)
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn get_rpg_system(
+    id: String,
+    state: State<AppState>,
+) -> Result<Option<crate::domain::rpg_system::RpgSystem>, String> {
+    Ok(state.rpg_registry.get(&id).cloned())
 }

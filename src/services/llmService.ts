@@ -7,7 +7,12 @@ export async function sendChatMessage(
   provider_id: string,
   model_id: string
 ): Promise<LlmResponse> {
-  return invoke("send_chat_message", { campaign_id, user_message, provider_id, model_id });
+  return invoke("send_chat_message", {
+    campaignId: campaign_id,
+    userMessage: user_message,
+    providerId: provider_id,
+    modelId: model_id,
+  });
 }
 
 export async function listProviders(): Promise<ProviderInfo[]> {
@@ -15,5 +20,5 @@ export async function listProviders(): Promise<ProviderInfo[]> {
 }
 
 export async function validateApiKey(provider_id: string, key: string): Promise<boolean> {
-  return invoke("validate_api_key", { provider_id, key });
+  return invoke("validate_api_key", { providerId: provider_id, key });
 }

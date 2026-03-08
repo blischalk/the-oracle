@@ -1,13 +1,16 @@
+/* Mörk Borg — Doomed & Burning
+   Dark as pitch with scorched orange borders and bile-yellow highlights.
+   Chaotic but legible — death should be readable. */
 .theme-mork-borg {
-  --color-bg: #1a0a00;
-  --color-surface: #2d1200;
-  --color-border: #ff6600;
-  --color-primary: #ffcc00;
-  --color-text: #ffeecc;
-  --color-text-muted: #cc9944;
-  --color-user-bubble: #3d1a00;
-  --color-assistant-bubble: #1a0a00;
-  --font-body: 'Impact', 'Arial Black', sans-serif;
-  --font-mono: 'Courier New', monospace;
+  --color-bg: #140800;
+  --color-surface: #1f0d00;
+  --color-border: #33150a;
+  --color-primary: #f5b000;
+  --color-text: #fff0cc;
+  --color-text-muted: #c8903c;
+  --color-user-bubble: #2e1205;
+  --color-assistant-bubble: #1a0900;
+  --font-body: 'Impact', 'Arial Black', 'Arial', sans-serif;
+  --font-mono: 'Courier New', Consolas, monospace;
   --border-radius: 0;
 }

@@ -11,8 +11,11 @@ export function MessageBubble({ message }: Props) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
       <div
-        className="max-w-[75%] rounded-lg p-3 text-sm leading-relaxed"
+        className="max-w-[75%] rounded-lg oracle-prose"
         style={{
+          padding: "var(--space-3)",
+          fontSize: "1.0625rem",
+          lineHeight: "var(--line-height-relaxed)",
           backgroundColor: isUser ? "var(--color-user-bubble)" : "var(--color-assistant-bubble)",
           border: "1px solid var(--color-border)",
           color: "var(--color-text)",

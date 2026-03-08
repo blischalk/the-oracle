@@ -2,9 +2,33 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
-    "opener:default"
+    "core:window:allow-set-fullscreen",
+    "opener:default",
+    "allow-list-campaigns",
+    "allow-create-campaign",
+    "allow-get-campaign",
+    "allow-get-campaign-state",
+    "allow-get-rpg-system",
+    "allow-archive-campaign",
+    "allow-delete-campaign",
+    "allow-update-campaign-name",
+    "allow-get-messages",
+    "allow-send-chat-message",
+    "allow-request-gm-greeting",
+    "allow-extract-character-data",
+    "allow-suggest-campaign-name",
+    "allow-list-providers",
+    "allow-validate-api-key",
+    "allow-get-settings",
+    "allow-save-settings",
+    "allow-save-api-key",
+    "allow-get-api-key",
+    "allow-delete-api-key",
+    "dialog:default"
   ]
 }
