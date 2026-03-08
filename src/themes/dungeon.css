@@ -1,0 +1,13 @@
+.theme-dungeon {
+  --color-bg: #0d0d0d;
+  --color-surface: #1a1209;
+  --color-border: #4a3728;
+  --color-primary: #c8a96e;
+  --color-text: #d4c5a9;
+  --color-text-muted: #8a7a65;
+  --color-user-bubble: #2a1f15;
+  --color-assistant-bubble: #1a1209;
+  --font-body: 'Palatino Linotype', 'Palatino', serif;
+  --font-mono: 'Courier New', monospace;
+  --border-radius: 0.25rem;
+}

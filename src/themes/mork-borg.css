@@ -1,0 +1,13 @@
+.theme-mork-borg {
+  --color-bg: #1a0a00;
+  --color-surface: #2d1200;
+  --color-border: #ff6600;
+  --color-primary: #ffcc00;
+  --color-text: #ffeecc;
+  --color-text-muted: #cc9944;
+  --color-user-bubble: #3d1a00;
+  --color-assistant-bubble: #1a0a00;
+  --font-body: 'Impact', 'Arial Black', sans-serif;
+  --font-mono: 'Courier New', monospace;
+  --border-radius: 0;
+}

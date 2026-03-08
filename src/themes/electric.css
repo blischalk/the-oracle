@@ -1,0 +1,13 @@
+.theme-electric {
+  --color-bg: #001a00;
+  --color-surface: #002200;
+  --color-border: #00ff41;
+  --color-primary: #00ff41;
+  --color-text: #ccffcc;
+  --color-text-muted: #669966;
+  --color-user-bubble: #003300;
+  --color-assistant-bubble: #001a00;
+  --font-body: 'Courier New', monospace;
+  --font-mono: 'Courier New', monospace;
+  --border-radius: 0;
+}

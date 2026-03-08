@@ -1,0 +1,13 @@
+.theme-cosmos {
+  --color-bg: #04071a;
+  --color-surface: #0a1030;
+  --color-border: #2244aa;
+  --color-primary: #6699ff;
+  --color-text: #cce0ff;
+  --color-text-muted: #6688bb;
+  --color-user-bubble: #0d1a44;
+  --color-assistant-bubble: #0a1030;
+  --font-body: 'Georgia', serif;
+  --font-mono: 'Courier New', monospace;
+  --border-radius: 1rem;
+}

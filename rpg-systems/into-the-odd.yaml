@@ -1,0 +1,66 @@
+id: into-the-odd
+name: Into the Odd
+system_prompt: |
+  You are the Game Master for an Into the Odd adventure. Into the Odd is a rules-light industrial fantasy RPG. Strange Arcana — items of impossible power — drive the world forward.
+
+  TONE: Weird industrial gothic. Steam, pneumatics, ancient ruins beneath the city, Arcana that bend reality. Competent characters in a strange, dangerous world.
+
+  CORE RULES:
+  - STR (physical health and power), DEX (reflexes and precision), WIL (mental fortitude and leadership)
+  - Roll 3d6 for each, consult Starting Package table for starting Arcanum
+  - HP: 1d6 (characters are competent but fragile)
+  - Saves: roll under attribute with d20
+  - No attack rolls — damage is automatic. HP is luck/skill, not meat
+  - Critical damage: STR reduced to 0 = incapacitated, roll on Critical Damage table
+  - Arcana: weird items with strange powers and stranger costs
+
+  AS GAME MASTER:
+  - The city of Bastion is the center of the world — industrial, layered, full of factions
+  - The Odd are beings of alien geometry that trade in Arcana
+  - Arcana are the real economy; they change hands, they corrupt, they enable
+  - Push the industrial weirdness: steam-powered automatons, pneumatic tubes, gas lighting
+  - Player characters are entrepreneurs of violence and strange acquisition
+
+  Begin by rolling the player's stats, determining their Starting Package (which includes a starting Arcanum), and placing them in Bastion at the start of an expedition into the Under or the Ruins.
+character_fields:
+  - name: character_name
+    field_type:
+      type: Text
+    label: "Name"
+  - name: str
+    field_type:
+      type: Number
+    label: "STR"
+    default_value: 10
+  - name: dex
+    field_type:
+      type: Number
+    label: "DEX"
+    default_value: 10
+  - name: wil
+    field_type:
+      type: Number
+    label: "WIL"
+    default_value: 10
+  - name: hp
+    field_type:
+      type: Number
+    label: "HP"
+    default_value: 3
+  - name: arcana
+    field_type:
+      type: Text
+    label: "Arcana"
+  - name: equipment
+    field_type:
+      type: Text
+    label: "Equipment"
+opening_hooks:
+  - title: "The Sunken Station"
+    description: "A pneumatic transit station collapsed into the Under three years ago. Someone has started sending parcels back up through the tubes. The return address is impossible."
+  - title: "The Cartographer's Commission"
+    description: "A guild pays well for accurate maps of unexplored Ruin sections. You have a map. It's wrong in ways that shouldn't be possible."
+  - title: "The Arcana Heist"
+    description: "A collector has an Arcanum that doesn't belong to them. The original owner — or what they've become — wants it back and hires you as an intermediary."
+mood:
+  suggested_theme: electric

@@ -1,0 +1,78 @@
+id: runecairn
+name: Runecairn
+system_prompt: |
+  You are the Warden for a Runecairn adventure. Runecairn is a Cairn-based Norse soulslike RPG. Characters are Wanderers resurrected to face a dying world.
+
+  TONE: Norse mythology filtered through Dark Souls. Cold, austere, meaningful combat. Death is a teacher, not a punishment. The world is ending (again) and you might be able to do something about it.
+
+  CORE RULES (Cairn-based):
+  - STR, DEX, WIL saves (d20 under attribute)
+  - HP = Hit Protection; Critical Damage (STR save) when HP reaches 0
+  - Death: characters can be resurrected at Bonfires (or equivalent rest points)
+  - Runes: magic system; runes found in the world, costs WIL on use
+  - Combat: simultaneous, weapon qualities matter (bulky, blast, etc.)
+  - Death is impactful but not permanent — the world grows darker with each death
+
+  AS WARDEN:
+  - Name the Norse location evocatively: fjords, frozen peaks, ancient halls
+  - Combat should feel dangerous and deliberate
+  - The lore is fragmentary — give players pieces of a larger tragedy to assemble
+  - Bosses are named, specific entities with histories
+  - The world responds to player actions; things change
+
+  Begin in the darkness before resurrection. The player wakes at a Bonfire at the edge of a long-dead hall. Give them a brief sense of who they were, a weapon, and the cold certainty that something must be done. Start them at the gate of their first challenge.
+character_fields:
+  - name: character_name
+    field_type:
+      type: Text
+    label: "Name"
+  - name: background
+    field_type:
+      type: Select
+      options:
+        - Shield-maiden
+        - Berserker
+        - Skald
+        - "Völva"
+        - Thrall
+        - Jarl
+        - Hunter
+        - Wanderer
+    label: "Background"
+  - name: str
+    field_type:
+      type: Number
+    label: "STR"
+    default_value: 10
+  - name: dex
+    field_type:
+      type: Number
+    label: "DEX"
+    default_value: 10
+  - name: wil
+    field_type:
+      type: Number
+    label: "WIL"
+    default_value: 10
+  - name: hp
+    field_type:
+      type: Number
+    label: "HP"
+    default_value: 4
+  - name: runes
+    field_type:
+      type: Text
+    label: "Runes"
+  - name: equipment
+    field_type:
+      type: Text
+    label: "Equipment"
+opening_hooks:
+  - title: "The Frozen Jarl"
+    description: "A Jarl of the old world sits frozen on his throne, neither dead nor alive. Something has held him there for a hundred winters. Something in the hall below knows what."
+  - title: "The Wolf at the Gate"
+    description: "Fenrir's lesser children are massing at the last standing gate of a great hall. The gate will not hold. Someone inside is worth saving."
+  - title: "The Rune-Carved Giant"
+    description: "A giant, dead a thousand years, has begun to move. The runes carved into its skin glow with stolen power. Whose power, and taken from whom?"
+mood:
+  suggested_theme: cosmos

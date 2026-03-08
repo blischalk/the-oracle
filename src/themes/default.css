@@ -1,0 +1,13 @@
+.theme-default {
+  --color-bg: #1a1a2e;
+  --color-surface: #16213e;
+  --color-border: #0f3460;
+  --color-primary: #e94560;
+  --color-text: #eaeaea;
+  --color-text-muted: #a0a0b0;
+  --color-user-bubble: #0f3460;
+  --color-assistant-bubble: #16213e;
+  --font-body: 'Georgia', serif;
+  --font-mono: 'Courier New', monospace;
+  --border-radius: 0.5rem;
+}

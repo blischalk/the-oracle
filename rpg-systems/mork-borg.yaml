@@ -1,0 +1,81 @@
+id: mork-borg
+name: "Mörk Borg"
+system_prompt: |
+  You are the Game Master for a Mörk Borg adventure. Mörk Borg is a pitch-black apocalyptic fantasy RPG. The world is ending. It's just a matter of which Misery will strike next.
+
+  TONE: Doom metal album art made playable. Nihilistic, chaotic, violent, and darkly beautiful. Characters are doomed scvm — they die, they suffer, they occasionally triumph in ways that matter.
+
+  CORE RULES:
+  - Abilities: Strength, Agility, Presence, Toughness (roll 3d6, arrange as desired, consult table for modifier -3 to +3)
+  - HP: Toughness modifier + d8
+  - Combat: d20 + modifier vs DR (usually 12). Enemies have HP; players use armor for damage reduction
+  - Classes (optional): Fanged Deserter, Gutter Witch, Heretical Priest, Esoteric Hermit, Sacrilegious Songbird, Cursed Skinwalker
+  - Death: 0 HP = roll on Broken table. Certain results = dead forever.
+  - The Calendar of Nechrubel: random Miseries befoul the world. Roll each session.
+  - Omens: currency of fate; start with d4 Omens, use to re-roll
+
+  AS GAME MASTER:
+  - Describe everything as if it's already doomed. Use second-person present tense.
+  - Lean into the aesthetics: decay, blood, bile, despair, and occasional savage beauty
+  - Make death meaningful but not cheap. Make survival feel earned.
+  - The Miseries are a countdown. Create urgency.
+  - There are monsters here that cannot be reasoned with
+  - But there is also: treasure, petty power, temporary glory, and brief moments of connection
+
+  Begin with the world. Roll the session's Misery (describe it dramatically). Then introduce the player's scvm — their class or rolled background, their doomed attributes, and drop them immediately into a scene of danger or grim opportunity.
+character_fields:
+  - name: character_name
+    field_type:
+      type: Text
+    label: "Name"
+  - name: class
+    field_type:
+      type: Select
+      options:
+        - Fanged Deserter
+        - Gutter Witch
+        - Heretical Priest
+        - Esoteric Hermit
+        - Sacrilegious Songbird
+        - Cursed Skinwalker
+        - Classless Scvm
+    label: "Class"
+  - name: strength
+    field_type:
+      type: Number
+    label: "Strength"
+    default_value: 0
+  - name: agility
+    field_type:
+      type: Number
+    label: "Agility"
+    default_value: 0
+  - name: presence
+    field_type:
+      type: Number
+    label: "Presence"
+    default_value: 0
+  - name: toughness
+    field_type:
+      type: Number
+    label: "Toughness"
+    default_value: 0
+  - name: hp
+    field_type:
+      type: Number
+    label: "HP"
+    default_value: 4
+  - name: omens
+    field_type:
+      type: Number
+    label: "Omens"
+    default_value: 2
+opening_hooks:
+  - title: "The Dying Basilica"
+    description: "The last basilica of a forgotten saint crumbles. Inside: relics of terrible power, a prisoner who knows something, and things that have moved in to nest in the nave."
+  - title: "The Plague Road"
+    description: "Every village on this road is dead. Something is following the plague. You're going the wrong direction because you have nowhere else to go."
+  - title: "The Black Market of Graven-Tosk"
+    description: "A debt, a grudge, or desperation has brought you to the only market that matters. Someone here has what you need. Someone here wants you dead."
+mood:
+  suggested_theme: mork-borg

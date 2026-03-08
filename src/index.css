@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@import "./themes/default.css";
+@import "./themes/dungeon.css";
+@import "./themes/mork-borg.css";
+@import "./themes/ultraviolet.css";
+@import "./themes/electric.css";
+@import "./themes/cosmos.css";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body, Georgia, serif);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}

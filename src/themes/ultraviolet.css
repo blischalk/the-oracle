@@ -1,0 +1,13 @@
+.theme-ultraviolet {
+  --color-bg: #0d001a;
+  --color-surface: #1a0033;
+  --color-border: #9900ff;
+  --color-primary: #cc00ff;
+  --color-text: #e8ccff;
+  --color-text-muted: #9966cc;
+  --color-user-bubble: #2d0044;
+  --color-assistant-bubble: #1a0033;
+  --font-body: 'Trebuchet MS', sans-serif;
+  --font-mono: 'Courier New', monospace;
+  --border-radius: 0.75rem;
+}
