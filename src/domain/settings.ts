@@ -7,7 +7,7 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   active_provider_id: "anthropic",
-  active_model_id: "claude-opus-4-5",
-  theme: "default",
+  active_model_id: "claude-sonnet-4-6",
+  theme: "ink",
   is_fullscreen: false,
 };

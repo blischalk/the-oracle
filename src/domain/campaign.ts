@@ -24,3 +24,18 @@ export interface CampaignState {
   notes: string;
   updated_at: string;
 }
+
+export interface NpcEntry {
+  id: string;
+  name: string;
+  description: string;
+  type: "npc" | "location";
+  status: "active" | "past";
+}
+
+export interface StoryThread {
+  id: string;
+  title: string;
+  description: string;
+  status: "active" | "potential" | "completed";
+}

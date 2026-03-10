@@ -1,6 +1,7 @@
 use tauri::State;
 
 use crate::domain::campaign::{Campaign, CampaignState, Message};
+use crate::domain::rpg_system::RpgSystem;
 use crate::AppState;
 
 #[tauri::command]
@@ -83,9 +84,23 @@ pub fn get_campaign_state(
 }
 
 #[tauri::command]
-pub fn get_rpg_system(
-    id: String,
-    state: State<AppState>,
-) -> Result<Option<crate::domain::rpg_system::RpgSystem>, String> {
+pub fn get_rpg_system(id: String, state: State<AppState>) -> Result<Option<RpgSystem>, String> {
     Ok(state.rpg_registry.get(&id).cloned())
+}
+
+#[tauri::command]
+pub fn list_rpg_systems(state: State<AppState>) -> Result<Vec<RpgSystem>, String> {
+    Ok(state.rpg_registry.list_all().into_iter().cloned().collect())
+}
+
+#[tauri::command]
+pub fn patch_character_data(
+    campaign_id: String,
+    patch: serde_json::Value,
+    state: State<AppState>,
+) -> Result<CampaignState, String> {
+    state
+        .campaign_service
+        .patch_character_data(&campaign_id, patch)
+        .map_err(|error| error.to_string())
 }

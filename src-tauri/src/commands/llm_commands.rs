@@ -36,6 +36,13 @@ pub async fn send_chat_message(
         .get(&rpg_system_id)
         .ok_or_else(|| format!("RPG system not found: {rpg_system_id}"))?;
 
+    let tools = crate::tools::definitions::build_tool_definitions(rpg_system);
+
+    let mut campaign_state = state
+        .campaign_service
+        .get_campaign_state(&campaign_id)
+        .map_err(|e| e.to_string())?;
+
     let context_messages = state
         .campaign_service
         .build_llm_context(&campaign_id, rpg_system)
@@ -43,9 +50,22 @@ pub async fn send_chat_message(
 
     let llm_response = state
         .llm_service
-        .send_message(&provider_id, &model_id, context_messages)
+        .send_message_with_tool_loop(
+            &provider_id,
+            &model_id,
+            context_messages,
+            tools,
+            &mut campaign_state,
+            rpg_system,
+        )
         .await
         .map_err(|error| error.to_string())?;
+
+    // Save updated campaign state (character sheet changes from tools)
+    state
+        .campaign_service
+        .save_campaign_state(&campaign_state)
+        .map_err(|e| e.to_string())?;
 
     let total_tokens = llm_response.input_tokens + llm_response.output_tokens;
     let assistant_domain_message = Message::new(
@@ -95,6 +115,13 @@ pub async fn request_gm_greeting(
         .get(&rpg_system_id)
         .ok_or_else(|| format!("RPG system not found: {rpg_system_id}"))?;
 
+    let tools = crate::tools::definitions::build_tool_definitions(rpg_system);
+
+    let mut campaign_state = state
+        .campaign_service
+        .get_campaign_state(&campaign_id)
+        .map_err(|e| e.to_string())?;
+
     let context_messages = state
         .campaign_service
         .build_greeting_context(&campaign_id, rpg_system, greeting_kind)
@@ -102,8 +129,21 @@ pub async fn request_gm_greeting(
 
     let llm_response = state
         .llm_service
-        .send_message(&provider_id, &model_id, context_messages)
+        .send_message_with_tool_loop(
+            &provider_id,
+            &model_id,
+            context_messages,
+            tools,
+            &mut campaign_state,
+            rpg_system,
+        )
         .await
+        .map_err(|e| e.to_string())?;
+
+    // Save updated campaign state (character sheet changes from tools)
+    state
+        .campaign_service
+        .save_campaign_state(&campaign_state)
         .map_err(|e| e.to_string())?;
 
     let total_tokens = llm_response.input_tokens + llm_response.output_tokens;
@@ -179,10 +219,7 @@ pub async fn suggest_campaign_name(
          Reply with only the title, no quotes or punctuation.\n\n{excerpt}"
     );
 
-    let chat_message = ChatMessage {
-        role: "user".to_string(),
-        content: prompt,
-    };
+    let chat_message = ChatMessage::user(prompt);
 
     let response = state
         .llm_service
@@ -272,10 +309,7 @@ pub async fn extract_character_data(
          Numbers must be numeric (e.g. 14 not \"14\").\n\nConversation:\n{conversation}"
     );
 
-    let chat_message = ChatMessage {
-        role: "user".to_string(),
-        content: prompt,
-    };
+    let chat_message = ChatMessage::user(prompt);
 
     let response = state
         .llm_service
@@ -293,8 +327,18 @@ pub async fn extract_character_data(
 
     let parsed: serde_json::Map<String, serde_json::Value> = match serde_json::from_str(json_str) {
         Ok(serde_json::Value::Object(m)) => m,
-        Ok(_) => return state.campaign_service.get_campaign_state(&campaign_id).map_err(|e| e.to_string()),
-        Err(_) => return state.campaign_service.get_campaign_state(&campaign_id).map_err(|e| e.to_string()),
+        Ok(_) => {
+            return state
+                .campaign_service
+                .get_campaign_state(&campaign_id)
+                .map_err(|e| e.to_string())
+        }
+        Err(_) => {
+            return state
+                .campaign_service
+                .get_campaign_state(&campaign_id)
+                .map_err(|e| e.to_string())
+        }
     };
 
     let valid_keys: std::collections::HashSet<&str> =

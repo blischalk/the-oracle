@@ -1,0 +1,16 @@
+/* Ink — Deep Night
+   Sophisticated near-black with soft indigo accents. Serif body text.
+   The default: calm, timeless, easy on the eyes for long sessions. */
+.theme-ink {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #2d3748;
+  --color-primary: #7c8cff;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-user-bubble: #1a2540;
+  --color-assistant-bubble: #161b22;
+  --font-body: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --border-radius: 0.5rem;
+}

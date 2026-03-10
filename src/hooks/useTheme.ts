@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useSettingsStore } from "../stores/settingsStore";
-import { THEMES } from "../themes";
+import { THEMES, DEFAULT_THEME_ID } from "../themes";
 
 export function useTheme() {
   const { settings, updateSettings } = useSettingsStore();
@@ -8,8 +8,11 @@ export function useTheme() {
   useEffect(() => {
     const html = document.documentElement;
     THEMES.forEach((t) => html.classList.remove(t.cssClass));
-    const active = THEMES.find((t) => t.id === settings.theme);
-    if (active) html.classList.add(active.cssClass);
+    const active =
+      THEMES.find((t) => t.id === settings.theme) ??
+      THEMES.find((t) => t.id === DEFAULT_THEME_ID) ??
+      THEMES[0];
+    html.classList.add(active.cssClass);
   }, [settings.theme]);
 
   function setTheme(themeId: string) {

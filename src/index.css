@@ -1,10 +1,10 @@
 @import "tailwindcss";
-@import "./themes/default.css";
-@import "./themes/dungeon.css";
-@import "./themes/mork-borg.css";
-@import "./themes/ultraviolet.css";
-@import "./themes/electric.css";
-@import "./themes/cosmos.css";
+@import "./themes/ink.css";
+@import "./themes/parchment.css";
+@import "./themes/ember.css";
+@import "./themes/terminal.css";
+@import "./themes/void.css";
+@import "./themes/slate.css";
 
 /* Design tokens for consistent spacing and typography */
 :root {
@@ -25,6 +25,12 @@
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.02em;
+}
+
+/* Word-by-word fade used by MessageBubble for new assistant messages */
+@keyframes wordFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 * {

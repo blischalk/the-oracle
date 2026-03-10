@@ -26,6 +26,7 @@ interface CampaignStore {
   sendMessage: (content: string, providerId: string, modelId: string) => Promise<void>;
   requestGreeting: (providerId: string, modelId: string) => Promise<void>;
   extractCharacterData: (providerId: string, modelId: string) => Promise<void>;
+  patchCharacterData: (patch: Record<string, unknown>) => Promise<void>;
   clearError: () => void;
 }
 
@@ -159,9 +160,11 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
         content: response.content,
         created_at: new Date().toISOString(),
       };
+      const updatedState = await campaignService.getCampaignState(activeCampaignId);
       set((state) => ({
         messages: [...state.messages, assistantMsg],
         isSending: false,
+        campaignState: updatedState,
       }));
 
       if (wasFirstExchange) {
@@ -185,8 +188,11 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
 
     try {
       await campaignService.requestGmGreeting(activeCampaignId, kind, providerId, modelId);
-      const updated = await campaignService.getMessages(activeCampaignId);
-      set({ messages: updated, isRequestingGreeting: false });
+      const [updated, updatedState] = await Promise.all([
+        campaignService.getMessages(activeCampaignId),
+        campaignService.getCampaignState(activeCampaignId),
+      ]);
+      set({ messages: updated, isRequestingGreeting: false, campaignState: updatedState });
     } catch (e) {
       requestedGreetingCampaignIds.delete(activeCampaignId);
       set({ isRequestingGreeting: false, error: String(e) });
@@ -205,6 +211,17 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
       set({ campaignState: updated });
     } catch {
       // Non-fatal: profile stays with dashes
+    }
+  },
+
+  patchCharacterData: async (patch: Record<string, unknown>) => {
+    const { activeCampaignId } = get();
+    if (!activeCampaignId) return;
+    try {
+      const updated = await campaignService.patchCharacterData(activeCampaignId, patch);
+      set({ campaignState: updated });
+    } catch (e) {
+      set({ error: String(e) });
     }
   },
 

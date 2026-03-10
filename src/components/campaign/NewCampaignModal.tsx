@@ -1,34 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCampaignStore } from "../../stores/campaignStore";
 import { useUiStore } from "../../stores/uiStore";
-import { suggestedThemeForSystem } from "../../themes";
-import { useSettingsStore } from "../../stores/settingsStore";
 import { ThemedSelect } from "../ui/ThemedSelect";
-
-const RPG_SYSTEMS = [
-  { id: "cairn", name: "Cairn" },
-  { id: "old-school-essentials", name: "Old School Essentials" },
-  { id: "troika", name: "Troika!" },
-  { id: "mork-borg", name: "Mörk Borg" },
-  { id: "into-the-odd", name: "Into the Odd" },
-  { id: "electric-bastionland", name: "Electric Bastionland" },
-  { id: "ultraviolet-grasslands", name: "Ultraviolet Grasslands" },
-  { id: "runecairn", name: "Runecairn" },
-  { id: "between-the-skies", name: "Between the Skies" },
-];
+import * as campaignService from "../../services/campaignService";
+import type { RpgSystem } from "../../domain/rpgSystem";
 
 const PLACEHOLDER_CAMPAIGN_NAME = "New Adventure";
 
 export function NewCampaignModal() {
-  const [systemId, setSystemId] = useState("cairn");
+  const [systems, setSystems] = useState<RpgSystem[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [systemId, setSystemId] = useState("");
   const { createCampaign } = useCampaignStore();
   const { closeNewCampaignModal } = useUiStore();
-  const { updateSettings } = useSettingsStore();
+
+  useEffect(() => {
+    campaignService.listRpgSystems().then((loaded) => {
+      setSystems(loaded);
+      if (loaded.length > 0 && !systemId) {
+        setSystemId(loaded[0].id);
+      }
+    }).catch((err: unknown) => {
+      setLoadError(String(err));
+    });
+  }, []);
 
   async function handleCreate() {
+    if (!systemId) return;
     await createCampaign(PLACEHOLDER_CAMPAIGN_NAME, systemId);
-    const suggested = suggestedThemeForSystem(systemId);
-    await updateSettings({ theme: suggested });
     closeNewCampaignModal();
   }
 
@@ -59,12 +58,22 @@ export function NewCampaignModal() {
           <label className="oracle-label" htmlFor="rpg-system">
             RPG System
           </label>
-          <ThemedSelect
-            id="rpg-system"
-            options={RPG_SYSTEMS.map((s) => ({ value: s.id, label: s.name }))}
-            value={systemId}
-            onChange={setSystemId}
-          />
+          {loadError ? (
+            <p style={{ color: "red", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
+              Error loading systems: {loadError}
+            </p>
+          ) : systems.length === 0 ? (
+            <p style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
+              Loading systems…
+            </p>
+          ) : (
+            <ThemedSelect
+              id="rpg-system"
+              options={systems.map((s) => ({ value: s.id, label: s.name }))}
+              value={systemId}
+              onChange={setSystemId}
+            />
+          )}
         </div>
         <div
           className="flex gap-3 justify-end"
@@ -85,6 +94,7 @@ export function NewCampaignModal() {
               color: "var(--color-bg)",
             }}
             onClick={handleCreate}
+            disabled={!systemId}
           >
             Create
           </button>

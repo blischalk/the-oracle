@@ -2,17 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { Campaign } from "../../domain/campaign";
 
-const RPG_NAMES: Record<string, string> = {
-  "old-school-essentials": "Old School Essentials",
-  "troika": "Troika!",
-  "mork-borg": "Mörk Borg",
-  "cairn": "Cairn",
-  "into-the-odd": "Into the Odd",
-  "electric-bastionland": "Electric Bastionland",
-  "ultraviolet-grasslands": "Ultraviolet Grasslands",
-  "runecairn": "Runecairn",
-  "between-the-skies": "Between the Skies",
-};
 
 interface Props {
   campaign: Campaign;
@@ -103,7 +92,7 @@ export function CampaignCard({ campaign, isActive, onSelect, onRename, onDelete 
         className="text-sm mt-1"
         style={{ color: "var(--color-text-muted)", lineHeight: "var(--line-height-normal)" }}
       >
-        {RPG_NAMES[campaign.rpg_system_id] ?? campaign.rpg_system_id}
+        {campaign.rpg_system_id}
       </p>
       <div
         className="flex gap-2 mt-2"

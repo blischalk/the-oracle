@@ -12,8 +12,8 @@ impl Default for AppSettings {
     fn default() -> Self {
         Self {
             active_provider_id: "anthropic".to_string(),
-            active_model_id: "claude-opus-4-5".to_string(),
-            theme: "default".to_string(),
+            active_model_id: "claude-sonnet-4-6".to_string(),
+            theme: "ink".to_string(),
             is_fullscreen: false,
         }
     }
@@ -28,8 +28,8 @@ mod tests {
         let settings = AppSettings::default();
 
         assert_eq!(settings.active_provider_id, "anthropic");
-        assert_eq!(settings.active_model_id, "claude-opus-4-5");
-        assert_eq!(settings.theme, "default");
+        assert_eq!(settings.active_model_id, "claude-sonnet-4-6");
+        assert_eq!(settings.theme, "ink");
         assert!(!settings.is_fullscreen);
     }
 }

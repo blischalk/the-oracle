@@ -239,10 +239,7 @@ mod tests {
             mock_server.uri()
         ));
 
-        let messages = vec![ChatMessage {
-            role: "user".to_string(),
-            content: "Hello".to_string(),
-        }];
+        let messages = vec![ChatMessage::user("Hello")];
 
         let response = provider
             .send_message(messages, "gpt-4o", "test-key")

@@ -1,0 +1,16 @@
+/* Ember — Dying Fire
+   Deep charcoal with glowing amber-orange accents. Serif body text.
+   The warmth of a campfire in a dark forest. */
+.theme-ember {
+  --color-bg: #110d08;
+  --color-surface: #1c1510;
+  --color-border: #38220e;
+  --color-primary: #e8742a;
+  --color-text: #f0dcc8;
+  --color-text-muted: #a07040;
+  --color-user-bubble: #2c1808;
+  --color-assistant-bubble: #160f08;
+  --font-body: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --border-radius: 0.375rem;
+}

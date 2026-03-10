@@ -14,8 +14,8 @@ describe("useTheme", () => {
   it("changes theme", async () => {
     const { result } = renderHook(() => useTheme());
     act(() => {
-      result.current.setTheme("dungeon");
+      result.current.setTheme("ember");
     });
-    expect(result.current.activeTheme).toBe("dungeon");
+    expect(result.current.activeTheme).toBe("ember");
   });
 });

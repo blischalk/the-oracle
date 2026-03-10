@@ -1,10 +1,19 @@
 import { create } from "zustand";
 
+export type SidebarTab =
+  | "campaigns"
+  | "character"
+  | "inventory"
+  | "skills"
+  | "journal"
+  | "quests";
+
 interface UiStore {
   isSidebarOpen: boolean;
   isSettingsOpen: boolean;
   isNewCampaignModalOpen: boolean;
   searchQuery: string;
+  activeSidebarTab: SidebarTab;
 
   toggleSidebar: () => void;
   openSettings: () => void;
@@ -12,6 +21,7 @@ interface UiStore {
   openNewCampaignModal: () => void;
   closeNewCampaignModal: () => void;
   setSearchQuery: (q: string) => void;
+  setActiveSidebarTab: (tab: SidebarTab) => void;
 }
 
 export const useUiStore = create<UiStore>((set) => ({
@@ -19,6 +29,7 @@ export const useUiStore = create<UiStore>((set) => ({
   isSettingsOpen: false,
   isNewCampaignModalOpen: false,
   searchQuery: "",
+  activeSidebarTab: "campaigns",
 
   toggleSidebar: () => set((s) => ({ isSidebarOpen: !s.isSidebarOpen })),
   openSettings: () => set({ isSettingsOpen: true }),
@@ -26,4 +37,5 @@ export const useUiStore = create<UiStore>((set) => ({
   openNewCampaignModal: () => set({ isNewCampaignModalOpen: true }),
   closeNewCampaignModal: () => set({ isNewCampaignModalOpen: false }),
   setSearchQuery: (q: string) => set({ searchQuery: q }),
+  setActiveSidebarTab: (tab: SidebarTab) => set({ activeSidebarTab: tab }),
 }));

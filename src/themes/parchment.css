@@ -1,0 +1,16 @@
+/* Parchment — Candlelit Tome
+   Warm sepia darkness with aged-gold accents. Palatino body text.
+   Like reading an old manuscript by candlelight. */
+.theme-parchment {
+  --color-bg: #181008;
+  --color-surface: #221608;
+  --color-border: #3d2a10;
+  --color-primary: #d4a44c;
+  --color-text: #f0e2c4;
+  --color-text-muted: #b08040;
+  --color-user-bubble: #2e1e0a;
+  --color-assistant-bubble: #1c1206;
+  --font-body: 'Palatino Linotype', 'Palatino', 'Book Antiqua', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --border-radius: 0.25rem;
+}

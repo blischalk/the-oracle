@@ -6,14 +6,15 @@ use tauri::Manager;
 
 use commands::campaign_commands::{
     archive_campaign, create_campaign, delete_campaign, get_campaign, get_campaign_state,
-    get_messages, get_rpg_system, list_campaigns, update_campaign_name,
+    get_messages, get_rpg_system, list_campaigns, list_rpg_systems, patch_character_data,
+    update_campaign_name,
 };
 use commands::keychain_commands::{delete_api_key, get_api_key, save_api_key};
 use commands::llm_commands::{
     extract_character_data, list_providers, request_gm_greeting, send_chat_message,
     suggest_campaign_name, validate_api_key,
 };
-use commands::settings_commands::{get_settings, save_settings};
+use commands::settings_commands::{get_settings, open_user_systems_folder, save_settings};
 
 use keychain::keychain_service::KeychainService;
 use persistence::campaign_repository::{CampaignRepository, MessageRepository};
@@ -30,6 +31,7 @@ pub mod keychain;
 pub mod persistence;
 pub mod providers;
 pub mod services;
+pub mod tools;
 
 pub struct AppState {
     pub campaign_service: Arc<CampaignService>,
@@ -67,6 +69,9 @@ pub fn run() {
             validate_api_key,
             get_settings,
             save_settings,
+            open_user_systems_folder,
+            list_rpg_systems,
+            patch_character_data,
             save_api_key,
             get_api_key,
             delete_api_key,
@@ -121,29 +126,44 @@ fn open_application_database(app_handle: &tauri::AppHandle) -> anyhow::Result<Da
 }
 
 fn load_rpg_registry(app_handle: &tauri::AppHandle) -> RpgSystemRegistry {
-    // Prefer bundled resource path (works in production and dev when resources are copied)
-    let systems_directory = app_handle
+    let bundled_dir = bundled_systems_directory(app_handle);
+    let user_dir = user_systems_directory(app_handle);
+
+    let dirs: Vec<&Path> = [&bundled_dir, &user_dir]
+        .iter()
+        .filter_map(|opt| opt.as_deref())
+        .collect();
+
+    RpgSystemRegistry::load_from_directories(&dirs).unwrap_or_else(|error| {
+        eprintln!("Warning: could not load RPG systems: {error}");
+        RpgSystemRegistry::load_from_directories(&[]).unwrap()
+    })
+}
+
+fn bundled_systems_directory(app_handle: &tauri::AppHandle) -> Option<PathBuf> {
+    let resource_path = app_handle
         .path()
         .resolve("rpg-systems", BaseDirectory::Resource)
         .ok()
         .filter(|p| p.exists());
 
-    let systems_directory = systems_directory.or_else(|| {
-        // Dev fallback: rpg-systems next to the crate (project root)
+    resource_path.or_else(|| {
+        // Dev fallback: rpg-systems at project root
         let dev_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("..")
             .join("rpg-systems");
-        if dev_path.exists() {
-            Some(dev_path)
-        } else {
-            None
-        }
-    });
-
-    let systems_directory = systems_directory.unwrap_or_else(|| PathBuf::from("."));
-
-    RpgSystemRegistry::load(systems_directory.as_path()).unwrap_or_else(|error| {
-        eprintln!("Warning: could not load RPG systems from {systems_directory:?}: {error}");
-        RpgSystemRegistry::load(Path::new("/nonexistent")).unwrap()
+        dev_path.exists().then_some(dev_path)
     })
+}
+
+fn user_systems_directory(app_handle: &tauri::AppHandle) -> Option<PathBuf> {
+    let dir = app_handle
+        .path()
+        .app_data_dir()
+        .ok()?
+        .join("rpg-systems");
+
+    // Create it so users can find it, but don't fail if we can't
+    let _ = std::fs::create_dir_all(&dir);
+    Some(dir)
 }

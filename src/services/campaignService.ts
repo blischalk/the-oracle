@@ -50,6 +50,14 @@ export async function getRpgSystem(id: string): Promise<RpgSystem | null> {
   return invoke("get_rpg_system", { id });
 }
 
+export async function listRpgSystems(): Promise<RpgSystem[]> {
+  return invoke("list_rpg_systems");
+}
+
+export async function openUserSystemsFolder(): Promise<string> {
+  return invoke("open_user_systems_folder");
+}
+
 export async function extractCharacterData(
   campaignId: string,
   providerId: string,
@@ -76,6 +84,13 @@ export async function requestGmGreeting(
     providerId,
     modelId,
   });
+}
+
+export async function patchCharacterData(
+  campaignId: string,
+  patch: Record<string, unknown>
+): Promise<CampaignState> {
+  return invoke("patch_character_data", { campaignId, patch });
 }
 
 export function exportCampaignToMarkdown(campaign: Campaign, messages: Message[]): string {

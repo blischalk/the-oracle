@@ -77,6 +77,24 @@ impl CampaignService {
         self.campaign_repository.save_state(state)
     }
 
+    pub fn patch_character_data(
+        &self,
+        campaign_id: &str,
+        patch: serde_json::Value,
+    ) -> anyhow::Result<CampaignState> {
+        let mut state = self.get_campaign_state(campaign_id)?;
+        if let (serde_json::Value::Object(data), serde_json::Value::Object(patch_map)) =
+            (&mut state.character_data, patch)
+        {
+            for (key, value) in patch_map {
+                data.insert(key, value);
+            }
+        }
+        state.updated_at = chrono::Utc::now();
+        self.save_campaign_state(&state)?;
+        Ok(state)
+    }
+
     pub fn build_llm_context(
         &self,
         campaign_id: &str,
@@ -106,48 +124,69 @@ impl CampaignService {
 
         let instruction = match kind {
             GreetingKind::NewCampaign => {
-                "A new campaign is beginning. Start character creation RIGHT NOW in this message — do not ask \
-                 the player what they would like to do or what kind of adventure they want. \
-                 \
-                 Follow this exact sequence: \
-                 1. Ask the player what they would like to name their character. This is ALWAYS the first question. \
-                 2. Walk them through any remaining creation steps for this system (background, stats, equipment). \
-                    Roll or assign values yourself where the rules allow — do not make the player do math. \
-                    Present results narratively (e.g. 'Your hands are strong — STR 14'). \
-                 3. Once the character has a name and their core attributes, immediately set the opening scene. \
-                    Describe WHERE the character is, WHAT they can see, hear, and feel right now, and \
-                    WHAT is immediately happening around them. Make it specific and vivid. \
-                    End with a concrete situation that demands a response — not an open question like \
-                    'what do you do?' in isolation, but a scene so alive the player KNOWS what they're reacting to. \
-                 \
-                 You are the author of this world. The player reacts to what you create. \
-                 Deliver the first step of this sequence now."
+                let stat_labels = numeric_stat_labels(rpg_system);
+                let stat_clause = if stat_labels.is_empty() {
+                    String::new()
+                } else {
+                    format!(
+                        " The stats tracked for this system are: {}. \
+                         As soon as the player gives their name (and background if applicable), \
+                         assign or roll ALL of these stats in that SAME response — do not wait. \
+                         State each value explicitly as a number (e.g. '{} 3, {} 4').",
+                        stat_labels.join(", "),
+                        stat_labels.first().cloned().unwrap_or_default(),
+                        stat_labels.get(1).cloned().unwrap_or_default(),
+                    )
+                };
+                format!(
+                    "A new campaign is beginning. Start character creation RIGHT NOW in this message — \
+                     do not ask the player what they would like to do or what kind of adventure they want. \
+                     \
+                     Follow this exact sequence: \
+                     1. Ask the player what they would like to name their character. This is ALWAYS the first question. \
+                     2. Walk them through any remaining creation steps for this system (background, stats, equipment).{stat_clause} \
+                        Roll or assign values yourself — do not make the player do math. \
+                        Present results narratively (e.g. 'Your hands are strong — STR 14'). \
+                     3. Once the character has a name and their core stats, immediately set the opening scene. \
+                        Describe WHERE the character is, WHAT they can see, hear, and feel right now, and \
+                        WHAT is immediately happening around them. Make it specific and vivid. \
+                        End with a concrete situation that demands a response — not an open question like \
+                        'what do you do?' in isolation, but a scene so alive the player KNOWS what they're reacting to. \
+                     \
+                     You are the author of this world. The player reacts to what you create. \
+                     Deliver the first step of this sequence now."
+                )
             }
             GreetingKind::ResumeCampaign => {
-                "The player has returned to this campaign. Give a SHORT, vivid recap (2–4 sentences) of \
-                 where the story left off — what happened, where the character is, what is at stake. \
-                 Then drop them straight back into the action: describe the scene as it stands RIGHT NOW \
-                 and present the immediate situation in front of them. \
-                 Do NOT ask 'what would you like to do?' in isolation. Present the world; let the player react. \
+                "The player has returned to continue this campaign. \
+                 Resume from the EXACT moment the last session ended — the same location, the same scene, \
+                 the same immediate situation. Do NOT advance time, move the player to a new location, \
+                 or jump to a future event the player hasn't reached yet. \
+                 \
+                 Look at the final message in the conversation history above — that is where the player is right now. \
+                 Briefly remind them (1–2 sentences) of the very last thing that was happening, \
+                 then describe that scene in vivid present tense as if no time has passed. \
+                 \
+                 If the player was mid-conversation with an NPC, that NPC is still there. \
+                 If they were mid-transaction in a shop, those items are still on the counter. \
+                 If they were mid-combat, the enemy is still in front of them. \
+                 \
+                 Do NOT summarise the whole adventure. Do NOT introduce new events. \
+                 Simply restore the world exactly as it was and let the player continue. \
                  Deliver this in one message now."
+                    .to_string()
             }
         };
 
         match kind {
             GreetingKind::NewCampaign => {
-                context.push(ChatMessage {
-                    role: "user".to_string(),
-                    content: instruction.to_string(),
-                });
+                context.push(ChatMessage::user(instruction));
             }
             GreetingKind::ResumeCampaign => {
                 let all_messages = self.message_repository.find_by_campaign(campaign_id)?;
                 let recent = take_last_n_messages(all_messages, MAX_CONTEXT_MESSAGES);
                 context.extend(recent.into_iter().map(domain_message_to_chat_message));
-                context.push(ChatMessage {
-                    role: "user".to_string(),
-                    content: instruction.to_string(),
-                });
+                context.push(ChatMessage::user(instruction));
             }
         }
 
@@ -159,11 +198,17 @@ impl CampaignService {
     }
 }
 
+fn numeric_stat_labels(rpg_system: &RpgSystem) -> Vec<String> {
+    rpg_system
+        .character_fields
+        .iter()
+        .filter(|f| matches!(f.field_type, crate::domain::rpg_system::FieldType::Number))
+        .map(|f| f.label.clone())
+        .collect()
+}
+
 fn system_message_for(rpg_system: &RpgSystem) -> ChatMessage {
-    ChatMessage {
-        role: "system".to_string(),
-        content: rpg_system.system_prompt.clone(),
-    }
+    ChatMessage::system(rpg_system.system_prompt.clone())
 }
 
 fn take_last_n_messages(messages: Vec<Message>, count: usize) -> Vec<Message> {
@@ -185,6 +230,7 @@ fn domain_message_to_chat_message(message: Message) -> ChatMessage {
     ChatMessage {
         role: message.role.to_string(),
         content: message.content,
+        ..Default::default()
     }
 }
 

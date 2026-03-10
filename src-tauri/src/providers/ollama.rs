@@ -175,10 +175,7 @@ mod tests {
         let provider =
             OllamaProvider::with_base_url(format!("{}/api/chat", mock_server.uri()));
 
-        let messages = vec![ChatMessage {
-            role: "user".to_string(),
-            content: "Hello".to_string(),
-        }];
+        let messages = vec![ChatMessage::user("Hello")];
 
         let response = provider
             .send_message(messages, "llama3.2:latest", "")

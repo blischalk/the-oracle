@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-rpg-systems"
+description = "Enables the list_rpg_systems command without any pre-configured scope."
+commands.allow = ["list_rpg_systems"]
+
+[[permission]]
+identifier = "deny-list-rpg-systems"
+description = "Denies the list_rpg_systems command without any pre-configured scope."
+commands.deny = ["list_rpg_systems"]

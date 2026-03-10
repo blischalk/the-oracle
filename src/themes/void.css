@@ -1,0 +1,16 @@
+/* Void — Between Stars
+   Near-black with electric violet. Sans-serif body text.
+   Strange, otherworldly — the space between known things. */
+.theme-void {
+  --color-bg: #09070f;
+  --color-surface: #110d1c;
+  --color-border: #261545;
+  --color-primary: #a060f0;
+  --color-text: #e8ddff;
+  --color-text-muted: #7850b0;
+  --color-user-bubble: #1e1040;
+  --color-assistant-bubble: #0d0920;
+  --font-body: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --border-radius: 0.75rem;
+}

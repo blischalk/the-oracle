@@ -24,12 +24,29 @@ const errorBannerStyle: React.CSSProperties = {
   border: "1px solid #fecaca",
 };
 
+// A message is considered "new" if it arrived within the last 8 seconds.
+// This distinguishes freshly-received LLM responses (animate them) from the
+// historical messages loaded when opening an existing campaign (do not animate).
+const NEW_MESSAGE_THRESHOLD_MS = 8000;
+
+function isRecentMessage(msg: { created_at: string }): boolean {
+  return Date.now() - new Date(msg.created_at).getTime() < NEW_MESSAGE_THRESHOLD_MS;
+}
+
 export function ChatWindow() {
-  const { messages, isSending, submit, bottomRef } = useChat();
+  const { messages, isSending, submit, scrollContainerRef, lastUserMessageRef, bottomSpacerRef } = useChat();
   const { searchQuery, setSearchQuery } = useUiStore();
   const filtered = searchQuery
     ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
     : messages;
+
+  // Determine which assistant message should animate. Only the most recent one
+  // qualifies, and only when it was just received (not loaded from history).
+  const lastMsg = messages[messages.length - 1];
+  const animatingMessageId =
+    !searchQuery && lastMsg?.role === "assistant" && isRecentMessage(lastMsg)
+      ? lastMsg.id
+      : null;
   const {
     activeCampaignId,
     campaignState,
@@ -40,7 +57,9 @@ export function ChatWindow() {
     clearError,
   } = useCampaignStore();
   const { settings, isLoaded: isSettingsLoaded, loadSettings } = useSettingsStore();
-  const extractedForCampaignId = useRef<string | null>(null);
+  // Track the message count at the time of the last extraction attempt so we only
+  // re-extract after new conversation has arrived, not on every render.
+  const lastExtractionAtMessageCount = useRef(0);
 
   // Ensure settings are loaded when we have a campaign
   useEffect(() => {
@@ -55,33 +74,42 @@ export function ChatWindow() {
     requestGreeting(settings.active_provider_id, settings.active_model_id);
   }, [activeCampaignId, settings.active_provider_id, settings.active_model_id, requestGreeting]);
 
-  // Reset extraction ref when campaign changes so we can re-extract when returning to a campaign
+  // Reset extraction counter when campaign changes
   useEffect(() => {
-    if (!activeCampaignId) extractedForCampaignId.current = null;
+    lastExtractionAtMessageCount.current = 0;
   }, [activeCampaignId]);
 
-  // When campaign has messages but no saved character name/stats, extract from conversation once
+  // Re-attempt character extraction after every new GM response until a name is found.
+  // Requires at least 4 messages (GM intro + user reply + at least one exchange) so the
+  // conversation actually contains the character's name before we attempt extraction.
   useEffect(() => {
     if (
       !activeCampaignId ||
       !isSettingsLoaded ||
       isRequestingGreeting ||
-      messages.length === 0 ||
       !settings.active_provider_id ||
       !settings.active_model_id
     )
       return;
+
     const data = campaignState?.character_data as Record<string, unknown> | undefined;
     if (hasCharacterName(data)) return;
-    if (extractedForCampaignId.current === activeCampaignId) return;
-    extractedForCampaignId.current = activeCampaignId;
+
+    const lastMessage = messages[messages.length - 1];
+    const hasEnoughContext = messages.length >= 4 && lastMessage?.role === "assistant";
+    if (!hasEnoughContext) return;
+
+    // Only extract if new messages have arrived since the last attempt
+    if (messages.length <= lastExtractionAtMessageCount.current) return;
+    lastExtractionAtMessageCount.current = messages.length;
+
     extractCharacterData(settings.active_provider_id, settings.active_model_id);
   }, [
     activeCampaignId,
     campaignState?.character_data,
     isRequestingGreeting,
     isSettingsLoaded,
-    messages.length,
+    messages,
     settings.active_provider_id,
     settings.active_model_id,
     extractCharacterData,
@@ -142,7 +170,7 @@ export function ChatWindow() {
           )}
         </div>
       )}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4">
         {error && (
           <div role="alert" style={errorBannerStyle}>
             <span>{error}</span>
@@ -157,11 +185,18 @@ export function ChatWindow() {
             </button>
           </div>
         )}
-        {filtered.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
+        {filtered.map((msg, index) => {
+          const isLastUserMessage =
+            msg.role === "user" &&
+            !filtered.slice(index + 1).some((m) => m.role === "user");
+          return (
+            <div key={msg.id} ref={isLastUserMessage ? lastUserMessageRef : undefined}>
+              <MessageBubble message={msg} isNew={msg.id === animatingMessageId} />
+            </div>
+          );
+        })}
         {(isSending || isRequestingGreeting) && <TypingIndicator />}
-        <div ref={bottomRef} />
+        <div ref={bottomSpacerRef} aria-hidden />
       </div>
       <MessageInput onSubmit={submit} disabled={isSending || isRequestingGreeting} />
     </div>

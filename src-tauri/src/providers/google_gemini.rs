@@ -215,10 +215,7 @@ impl LlmProvider for GoogleGeminiProvider {
 
     async fn validate_api_key(&self, key: &str) -> Result<bool, LlmError> {
         let url = self.build_url("gemini-2.0-flash", key);
-        let request_body = build_gemini_request(vec![ChatMessage {
-            role: "user".to_string(),
-            content: "Hi".to_string(),
-        }]);
+        let request_body = build_gemini_request(vec![ChatMessage::user("Hi")]);
 
         let http_response = self
             .client
@@ -288,10 +285,7 @@ mod tests {
             mock_server.uri()
         ));
 
-        let messages = vec![ChatMessage {
-            role: "user".to_string(),
-            content: "Hello".to_string(),
-        }];
+        let messages = vec![ChatMessage::user("Hello")];
 
         let response = provider
             .send_message(messages, "gemini-2.0-flash", "test-key")
@@ -306,14 +300,8 @@ mod tests {
     #[test]
     fn system_message_is_converted_to_system_instruction() {
         let messages = vec![
-            ChatMessage {
-                role: "system".to_string(),
-                content: "You are an oracle.".to_string(),
-            },
-            ChatMessage {
-                role: "user".to_string(),
-                content: "Speak!".to_string(),
-            },
+            ChatMessage::system("You are an oracle."),
+            ChatMessage::user("Speak!"),
         ];
 
         let request = build_gemini_request(messages);

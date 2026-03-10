@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { THEMES, suggestedThemeForSystem } from "../../themes";
+import { THEMES, DEFAULT_THEME_ID } from "../../themes";
 
 describe("themes", () => {
   it("has 6 themes", () => {
@@ -14,15 +14,13 @@ describe("themes", () => {
     });
   });
 
-  it("suggests mork-borg theme for mork-borg system", () => {
-    expect(suggestedThemeForSystem("mork-borg")).toBe("mork-borg");
+  it("default theme id points to a real theme", () => {
+    expect(THEMES.find((t) => t.id === DEFAULT_THEME_ID)).toBeDefined();
   });
 
-  it("suggests dungeon theme for cairn", () => {
-    expect(suggestedThemeForSystem("cairn")).toBe("dungeon");
-  });
-
-  it("falls back to default for unknown system", () => {
-    expect(suggestedThemeForSystem("unknown-rpg-system")).toBe("default");
+  it("css class follows theme-<id> convention", () => {
+    THEMES.forEach((t) => {
+      expect(t.cssClass).toBe(`theme-${t.id}`);
+    });
   });
 });

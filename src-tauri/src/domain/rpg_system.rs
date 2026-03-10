@@ -38,13 +38,53 @@ pub struct RpgSystemMood {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EquipmentItem {
+    pub name: String,
+    pub cost: String,
+    pub damage: Option<String>,
+    #[serde(default)]
+    pub is_bulky: bool,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ArcanaItem {
+    pub name: String,
+    pub effect: String,
+    pub cost: Option<String>,
+    pub charges: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StarterPackage {
+    pub name: String,
+    pub items: Vec<String>,
+    pub gold: Option<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpgSystem {
     pub id: RpgSystemId,
     pub name: String,
     pub system_prompt: String,
     pub character_fields: Vec<CharacterField>,
-    pub mood: RpgSystemMood,
+    #[serde(default)]
+    pub mood: Option<RpgSystemMood>,
+    #[serde(default)]
     pub opening_hooks: Vec<OpeningHook>,
+    #[serde(default)]
+    pub rules: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub equipment: Vec<EquipmentItem>,
+    #[serde(default)]
+    pub arcana: Vec<ArcanaItem>,
+    #[serde(default)]
+    pub starter_packages: Vec<StarterPackage>,
+    #[serde(default)]
+    pub setting: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub dice_tables: std::collections::HashMap<String, Vec<String>>,
 }
 
 #[cfg(test)]
@@ -69,13 +109,19 @@ mod tests {
                 label: "Strength".to_string(),
                 default_value: Some(serde_json::json!(10)),
             }],
-            mood: RpgSystemMood {
+            mood: Some(RpgSystemMood {
                 suggested_theme: "fantasy".to_string(),
-            },
+            }),
             opening_hooks: vec![OpeningHook {
                 title: "The Tavern".to_string(),
                 description: "You wake up in a tavern.".to_string(),
             }],
+            rules: std::collections::HashMap::new(),
+            equipment: vec![],
+            arcana: vec![],
+            starter_packages: vec![],
+            setting: std::collections::HashMap::new(),
+            dice_tables: std::collections::HashMap::new(),
         };
 
         let json = serde_json::to_string(&system).unwrap();
@@ -83,5 +129,23 @@ mod tests {
 
         assert_eq!(round_tripped.id.0, "dnd5e");
         assert_eq!(round_tripped.character_fields.len(), 1);
+    }
+
+    #[test]
+    fn rpg_system_new_fields_default_to_empty() {
+        let json = serde_json::json!({
+            "id": "test",
+            "name": "Test System",
+            "system_prompt": "You are a GM.",
+            "character_fields": []
+        });
+
+        let system: RpgSystem = serde_json::from_value(json).unwrap();
+        assert!(system.rules.is_empty());
+        assert!(system.equipment.is_empty());
+        assert!(system.arcana.is_empty());
+        assert!(system.starter_packages.is_empty());
+        assert!(system.setting.is_empty());
+        assert!(system.dice_tables.is_empty());
     }
 }

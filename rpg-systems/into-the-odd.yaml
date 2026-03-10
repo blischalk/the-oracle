@@ -1,47 +1,63 @@
 id: into-the-odd
 name: Into the Odd
 system_prompt: |
-  You are the Game Master for an Into the Odd adventure. Into the Odd is a rules-light industrial fantasy RPG. Strange Arcana — items of impossible power — drive the world forward.
+  You are the Referee for an Into the Odd adventure. Into the Odd is a rules-light, industrial-gothic RPG by Chris McDowall. Characters are desperate souls in a strange, industrial world haunted by Arcana — bizarre and powerful artefacts of unknown origin.
 
-  TONE: Weird industrial gothic. Steam, pneumatics, ancient ruins beneath the city, Arcana that bend reality. Competent characters in a strange, dangerous world.
+  TONE: Industrial-gothic and dangerous. Bastion is a city of smog-stained brick, gas-lit alleys, and grinding machinery. The world beyond the city walls is stranger and more hostile still. Every venture out may be your last. Wounds linger. The Odd is real, unpredictable, and terrifying.
 
-  CORE RULES:
-  - STR (physical health and power), DEX (reflexes and precision), WIL (mental fortitude and leadership)
-  - Roll 3d6 for each, consult Starting Package table for starting Arcanum
-  - HP: 1d6 (characters are competent but fragile)
-  - Saves: roll under attribute with d20
-  - No attack rolls — damage is automatic. HP is luck/skill, not meat
-  - Critical damage: STR reduced to 0 = incapacitated, roll on Critical Damage table
-  - Arcana: weird items with strange powers and stranger costs
+  CORE RULES SUMMARY:
+  - Characters have STR (physique and toughness), DEX (speed and reflexes), and WIL (confidence and willpower), each rolled 3d6.
+  - Hit Points (HP) protect against harm. When HP reaches 0, damage goes to STR. If STR hits 0, the character dies.
+  - On taking STR damage, make a STR Save (roll d20 equal to or under STR) or suffer Critical Damage — the character is incapacitated and dying without immediate aid.
+  - Saves: roll d20 equal to or under the relevant attribute to succeed. Call for saves only when there is meaningful risk.
+  - Armour reduces incoming damage (max 3). HP recovers with rest. STR recovers slowly over days.
+  - Combat: players roll all dice. Enemies don't roll to hit — their damage is fixed or rolled by the Referee. Describe results vividly. Combat is fast and deadly.
+  - Blast: attacks marked Blast hit all targets in the affected area. Roll damage once and apply to each.
+  - Morale: when enemies are outmatched or take serious casualties, they may flee (WIL Save for key enemies, automatic for minions).
+  - Rests: a short rest (a few minutes, safe) restores HP. A full rest (a night's sleep, safe) may restore some lost STR.
+  - Luck: when the outcome is uncertain and no stat applies, roll a d6. On 4+, luck favours the character.
+  - Deprived: a character who lacks food, water, or sleep is Deprived and cannot recover HP.
+  - Inventory: characters carry what makes narrative sense. Bulky items require two hands or significant effort to carry and use.
 
-  AS GAME MASTER:
-  - The city of Bastion is the center of the world — industrial, layered, full of factions
-  - The Odd are beings of alien geometry that trade in Arcana
-  - Arcana are the real economy; they change hands, they corrupt, they enable
-  - Push the industrial weirdness: steam-powered automatons, pneumatic tubes, gas lighting
-  - Player characters are entrepreneurs of violence and strange acquisition
+  TOOL USE RULES — follow these on every response:
+  - DICE: Never invent a dice result. Always call roll_dice before narrating any roll outcome. Pass the notation (e.g. "3d6", "d20", "d6") and use the returned total.
+  - CHARACTER SHEET: Call get_character_sheet before referencing any stat value. Call update_character_sheet immediately after any stat change (damage taken, healing, HP recovery, equipment picked up or dropped, gold spent or gained).
+  - SAVES: Use save_roll for STR/DEX/WIL saving throws. The tool rolls d20 and compares to the attribute automatically.
+  - CHARACTER CREATION: As soon as the player provides their name and optional background, call roll_dice("3d6") three times for STR, DEX, WIL, then roll_dice("d6") for HP. Optionally call get_starter_packages to pick an appropriate starting kit. Then call update_character_sheet with all starting values at once.
+  - RULES: If you need to reference an exact rule, call lookup_rules with the relevant topic.
+  - EQUIPMENT/ARCANA: Use lookup_equipment and lookup_arcana when players ask about items or when you need accurate costs and stats.
+  - TABLES: To generate random results, first call roll_dice with the appropriate notation, then call roll_on_table with the result.
 
-  Begin by rolling the player's stats, determining their Starting Package (which includes a starting Arcanum), and placing them in Bastion at the start of an expedition into the Under or the Ruins.
+  AS REFEREE:
+  - You are the author and director. You create situations; the player character reacts to them.
+  - Never open with "What would you like to do?" in isolation. Describe a scene first — what the character sees, hears, smells, and feels — then let the player react.
+  - Describe consequences immediately and advance to the next moment of tension.
+  - Telegraph danger clearly; don't pull punches when players ignore warnings.
+  - Make the world feel lived-in: factions, smells, sounds, glimpses of ordinary life shattered by the extraordinary.
+  - Keep the tone bleak but not hopeless. Wit and dark humour are welcome.
+  - Reference game mechanics (saves, armour, HP) openly when relevant — players should understand the stakes.
+  - WHEN TO PAUSE FOR PLAYER INPUT: Only stop narrating when the player faces a genuine fork — a moment
+    where their choice produces meaningfully different outcomes. Not every beat is a decision point.
+    Atmospheric moments (an NPC adjusts their coat, a machine grinds past, the lift descends), transitional
+    beats (you reach the street), and scenes with only one obvious continuation should be narrated through
+    without stopping. Never end a response with "What do you do?" as a reflex or habit.
+    A real decision point looks like: two paths with different risks, an NPC awaiting a specific answer,
+    an enemy about to act before the player can react, or a resource trade-off with real consequences.
+    When you reach one, do not ask an open question — describe the pressure: what the player can see,
+    what is about to happen if they do nothing, what hangs in the balance. The situation demands a response;
+    you do not need to ask for one.
 
-  GM BEHAVIOR RULES — follow these on every response:
-  - CHARACTER CREATION: Always begin by asking for the character's name. That is the first question, always.
-    Walk through creation steps yourself — roll or assign values narratively ("Your body is wiry, quick — DEX 13").
-    Never ask the player to do math or look up tables.
-  - DRIVE THE NARRATIVE: You are the author. You create situations; the player reacts.
-    Never open with "What would you like to do?" or "Where would you like to go?" in isolation.
-    Always describe a scene first — what the character sees, hears, smells, the immediate tension or opportunity —
-    then let the player's response be a reaction to what you have placed in front of them.
-  - PRESENT SITUATIONS: After each player action, describe consequences and immediately advance to the next
-    moment of tension or decision. Keep the story moving. If nothing dramatic is happening, something should be.
-  - MAKE CHOICES MATTER: When the player faces a decision, make the stakes clear. When they act, show the result.
-    Never ignore or soften a player's choice — let it ripple through the world.
-  - STAY IN VOICE: Maintain the tone, aesthetic, and mechanical flavor of this specific RPG at all times.
-    Reference the rules when relevant. Make rulings consistent with the system's ethos.
+  Attribution: Into the Odd was created by Chris McDowall. See bastionland.com.
+
 character_fields:
   - name: character_name
     field_type:
       type: Text
     label: "Name"
+  - name: background
+    field_type:
+      type: Text
+    label: "Background"
   - name: str
     field_type:
       type: Number
@@ -62,20 +78,441 @@ character_fields:
       type: Number
     label: "HP"
     default_value: 3
-  - name: arcana
+  - name: armor
+    field_type:
+      type: Number
+    label: "Armor"
+    default_value: 0
+  - name: gold
+    field_type:
+      type: Number
+    label: "Gold (Shillings)"
+    default_value: 0
+  - name: inventory
     field_type:
       type: Text
-    label: "Arcana"
-  - name: equipment
-    field_type:
-      type: Text
-    label: "Equipment"
+    label: "Inventory"
+
+rules:
+  combat: |
+    Combat is simultaneous and fast. On their turn, characters act in whatever order makes narrative sense.
+    Players roll all dice — both for their own attacks and for enemy damage dealt to them (the Referee announces what dice to roll).
+    Attack roll: roll your weapon's damage die. Reduce the result by the target's Armour (if any); the remainder is damage.
+    Damage first reduces HP. When HP reaches 0, remaining damage goes to STR.
+    On taking direct STR damage, the character must make a STR Save (d20 equal to or under STR) or suffer Critical Damage.
+    Critical Damage: the character is incapacitated and dying. Without immediate aid they will die.
+    If STR is reduced to 0, the character dies outright.
+  saves: |
+    A Save is called when a character faces a dangerous or uncertain situation where their attributes are directly tested.
+    Roll d20. If the result is equal to or under the relevant attribute (STR, DEX, or WIL), the save succeeds.
+    A roll of 1 is always a success. A roll of 20 is always a failure.
+    Do not call for saves for trivial actions. Saves are for peril, not routine activity.
+  damage: |
+    Weapons and hazards deal damage according to their listed die (d4, d6, d8, d10, d12).
+    Subtract the target's Armour value from incoming damage. The remainder reduces HP.
+    When HP reaches 0, excess damage goes directly to STR.
+    Unarmed attacks deal d4 damage. Improvised weapons deal d4 or d6 at the Referee's discretion.
+    Enhanced attacks (from advantage, position, or special circumstances) roll twice and take the higher result.
+    Impaired attacks (from wounds, disadvantage, or poor conditions) roll twice and take the lower result.
+  critical_damage: |
+    When a character takes STR damage (from HP reaching 0), they must immediately make a STR Save.
+    If the save fails, the character suffers Critical Damage: they collapse and are dying.
+    A critically damaged character can take no actions until stabilised by another character using first aid or similar means.
+    If left unattended after Critical Damage, the character dies at the end of the next turn or scene.
+  death: |
+    If STR is reduced to 0, the character dies immediately — no save, no last words.
+    Characters may also die from Critical Damage if not stabilised in time.
+    Death is permanent. There is no resurrection in Into the Odd.
+  blast: |
+    Some weapons and hazards have the Blast property. Blast attacks affect all targets within a defined area.
+    Roll the damage die once and apply that result to every target in the area (each may reduce by their own Armour).
+    Blast is lethal in enclosed spaces. Grenades, fire bombs, and spread-shot weapons commonly have this property.
+  morale: |
+    Enemies and NPCs have breaking points. When outmatched, badly wounded, or when their leader falls, they may flee.
+    Named enemies and leaders make a WIL Save to hold their ground. Lesser minions and fodder flee automatically when conditions are bad.
+    The Referee determines when morale is tested. Clever players can exploit morale to end fights without killing everyone.
+  reactions: |
+    When characters encounter an NPC or creature whose attitude is uncertain, roll 2d6 to determine their initial reaction.
+    2–3: Hostile — attacks or makes demands immediately.
+    4–5: Unfriendly — suspicious and wary; may attack if provoked.
+    6–8: Neutral — indifferent; will deal or talk if approached carefully.
+    9–11: Friendly — open to conversation and trade.
+    12: Helpful — actively wants to assist.
+    Reactions can shift based on how the characters behave. A good argument, a bribe, or an insult all matter.
+  rests: |
+    Short Rest: the character rests for a few minutes in a safe spot. HP fully recovers.
+    Full Rest: the character sleeps a full night in relative safety. HP recovers and the Referee may allow a small amount of STR recovery (typically 1d6 STR back, up to maximum).
+    Rest is impossible while in danger. Being Deprived prevents HP recovery even from rest.
+  luck: |
+    When the outcome of a situation is uncertain but no attribute directly applies, the Referee may call for a Luck roll.
+    Roll d6. On a 4 or higher, luck favours the character. On 1–3, luck is against them.
+    Luck rolls are rare. Most situations should be resolved through player choice and attribute saves.
+  bulky: |
+    Some items are marked Bulky. A Bulky item requires two hands or significant physical effort to carry and use effectively.
+    A character cannot effectively use a Bulky weapon or carry a Bulky item and also use a shield or second weapon simultaneously.
+    The Referee may rule that carrying too many Bulky items Deprives the character of effective movement.
+  deprived: |
+    A character is Deprived when they lack a basic need: food, water, warmth, or sleep.
+    A Deprived character cannot recover HP from any source.
+    If a character remains Deprived for a full day without relief, they may also begin to lose STR (Referee's discretion).
+    Address Deprivation before attempting to rest or recover.
+  ability_score_loss: |
+    Attribute loss (STR, DEX, or WIL) from damage, poison, or other effects is serious.
+    Attributes recover with full rest and care, at the Referee's discretion — typically 1d6 per night of proper rest, not exceeding the original maximum.
+    Some injuries or Arcana effects may reduce attributes permanently. The Referee will be clear when this is the case.
+
+equipment:
+  # Weapons
+  - name: Unarmed Strike
+    cost: free
+    damage: d4
+    is_bulky: false
+    notes: Fists, feet, headbutts.
+  - name: Dagger
+    cost: 2s
+    damage: d6
+    is_bulky: false
+    notes: Concealable. Can be thrown.
+  - name: Club / Cudgel
+    cost: 1s
+    damage: d6
+    is_bulky: false
+    notes: Simple bludgeon. Ubiquitous.
+  - name: Staff
+    cost: 1s
+    damage: d6
+    is_bulky: true
+    notes: Two-handed. Also useful as a walking stick.
+  - name: Sword
+    cost: 10s
+    damage: d8
+    is_bulky: false
+    notes: Standard military blade.
+  - name: Axe
+    cost: 5s
+    damage: d8
+    is_bulky: false
+    notes: Multipurpose — also useful for doors and wood.
+  - name: Mace
+    cost: 5s
+    damage: d8
+    is_bulky: false
+    notes: Effective against armoured foes.
+  - name: Pistol
+    cost: 20s
+    damage: d8
+    is_bulky: false
+    notes: Loud. Single shot before reloading (one action).
+  - name: Musket
+    cost: 30s
+    damage: d10
+    is_bulky: true
+    notes: Bulky. Long range. Loud. Single shot before reloading.
+  - name: Blunderbuss
+    cost: 25s
+    damage: d8
+    is_bulky: true
+    notes: Bulky. Blast at close range. Loaded with scrap and shot.
+  - name: Heavy Pistol
+    cost: 35s
+    damage: d10
+    is_bulky: false
+    notes: A large, powerful sidearm. Single shot before reloading.
+  - name: Grenade
+    cost: 10s
+    damage: d8
+    is_bulky: false
+    notes: "Blast. Single use. Thrown (near range)."
+  # Armour
+  - name: Light Armour (Leather)
+    cost: 15s
+    damage: null
+    is_bulky: false
+    notes: "Armour 1."
+  - name: Medium Armour (Chainmail)
+    cost: 40s
+    damage: null
+    is_bulky: true
+    notes: "Armour 2. Bulky."
+  - name: Heavy Armour (Plate)
+    cost: 80s
+    damage: null
+    is_bulky: true
+    notes: "Armour 3. Bulky."
+  - name: Shield
+    cost: 10s
+    damage: null
+    is_bulky: false
+    notes: "Armour +1. Must be wielded in the off-hand."
+  # Tools and equipment
+  - name: Rope (60ft)
+    cost: 1s
+    damage: null
+    is_bulky: false
+    notes: Hempen. Good for climbing, binding, or rigging.
+  - name: Lantern and Oil (6 hours)
+    cost: 3s
+    damage: null
+    is_bulky: false
+    notes: Produces bright light in a small area.
+  - name: Torch
+    cost: 1s
+    damage: null
+    is_bulky: false
+    notes: Burns for 1 hour. Can be used as an improvised weapon (d4, sets targets alight).
+  - name: Crowbar
+    cost: 2s
+    damage: null
+    is_bulky: false
+    notes: Force doors, pry crates, lever boulders. d6 damage if used as a weapon.
+  - name: Grappling Hook
+    cost: 3s
+    damage: null
+    is_bulky: false
+    notes: Used with rope to scale walls and ledges.
+  - name: Manacles
+    cost: 4s
+    damage: null
+    is_bulky: false
+    notes: Restrains a person. Requires a key or STR Save to break free.
+  - name: Lockpick Set
+    cost: 10s
+    damage: null
+    is_bulky: false
+    notes: DEX Save to pick most locks. Fails silently on a critical miss.
+  - name: Medical Kit
+    cost: 15s
+    damage: null
+    is_bulky: false
+    notes: "3 uses. Stabilises a critically damaged character. Cannot restore STR."
+  - name: Rations (1 day)
+    cost: 1s
+    damage: null
+    is_bulky: false
+    notes: Prevents Deprivation for one day.
+  - name: Waterskin
+    cost: 1s
+    damage: null
+    is_bulky: false
+    notes: Holds enough water for one day.
+  - name: Backpack
+    cost: 2s
+    damage: null
+    is_bulky: false
+    notes: Allows organised carrying of equipment.
+  - name: Notebook and Pencil
+    cost: 1s
+    damage: null
+    is_bulky: false
+    notes: For maps, notes, and sketches.
+  - name: Pocket Watch
+    cost: 5s
+    damage: null
+    is_bulky: false
+    notes: Accurate to within a few minutes per day.
+  # Consumables / special items
+  - name: Fire Oil (flask)
+    cost: 3s
+    damage: null
+    is_bulky: false
+    notes: "Poured and ignited, burns an area for several rounds. d6 damage per round to those in it."
+  - name: Flashbang
+    cost: 15s
+    damage: null
+    is_bulky: false
+    notes: "Blast. Blinds all in close range for one round. No HP damage."
+  - name: Smoke Bomb
+    cost: 8s
+    damage: null
+    is_bulky: false
+    notes: Fills a room with thick smoke. Negates ranged attacks through the cloud for 2 rounds.
+  - name: Bomb (improvised)
+    cost: 20s
+    damage: d10
+    is_bulky: false
+    notes: "Blast. Loud. Unreliable — on a 1, it fails to detonate."
+  # Beasts and services
+  - name: Mule
+    cost: 30s
+    damage: null
+    is_bulky: false
+    notes: "Carries up to 6 Bulky items. Stubborn. Not combat-trained."
+  - name: Horse (riding)
+    cost: 75s
+    damage: null
+    is_bulky: false
+    notes: Faster travel. Easily spooked by Arcana and gunfire.
+  - name: Lodging (per night)
+    cost: 2s
+    damage: null
+    is_bulky: false
+    notes: A bed, a roof, and relative safety. Enables a Full Rest.
+  - name: Meal (tavern)
+    cost: 1s
+    damage: null
+    is_bulky: false
+    notes: A hot meal. Clears Deprivation.
+
+arcana:
+  - name: Iron Shroud
+    effect: "When worn, reduces all incoming damage by 2 (to a minimum of 0). Once per day, can be activated to completely negate one source of damage. After activation, lies inert until the next dawn. The wearer always feels watched."
+    cost: null
+    charges: null
+  - name: The Pale Lantern
+    effect: "Burns with cold white flame. Reveals hidden doors, invisible creatures, and concealed Arcana within 30ft. Creatures of the Odd recoil from its light. Oil is unknown — it never seems to run dry, but sometimes flickers on its own."
+    cost: null
+    charges: null
+  - name: Voidstone
+    effect: "A smooth black stone that absorbs sound in a 10ft radius around the holder. All activity within the radius is completely silent. Lasts as long as held. The holder cannot hear anything outside the radius while using it."
+    cost: null
+    charges: null
+  - name: Twinblade
+    effect: "A short blade that exists simultaneously in two places. When it strikes, it deals damage twice. On a critical success (roll equal to STR exactly), it phases through armour entirely. Hums faintly when near other Arcana."
+    cost: null
+    charges: null
+  - name: The Compact of Salt
+    effect: "A folded paper contract written in old salt-trade cipher. Any verbal agreement made while this is held is binding — both parties know if the other breaks it, though the compact imposes no physical consequence. Duplicating or forging it fails silently."
+    cost: null
+    charges: null
+  - name: Breath of the Deep
+    effect: "A small brass inhaler. Using it grants the ability to breathe underwater and see in total darkness for 1 hour. 3 charges. After the last charge, it fills with seawater and is useless."
+    cost: null
+    charges: 3
+  - name: Clockwork Eye
+    effect: "Replaces one eye (requires a STR Save during installation; failure means 1d6 STR damage). The clockwork eye sees perfectly in low light and can zoom in on distant objects. Once per day it can read any text, even if the language is unknown, translating it into the bearer's native tongue."
+    cost: null
+    charges: null
+  - name: The Hollow Crown
+    effect: "A crown of dull iron. The wearer can hear the surface thoughts of anyone within 20ft (intentions, emotions, fears — not full sentences). WIL Save each hour or the wearer cannot distinguish their own thoughts from those of others."
+    cost: null
+    charges: null
+
+starter_packages:
+  - name: The Wretch
+    items:
+      - Dagger
+      - Torch (x3)
+      - Rope (60ft)
+      - Rations (3 days)
+    gold: "5s"
+    notes: "You have nothing but your wits and your desperation. You've survived this long — barely."
+  - name: The Soldier (Discharged)
+    items:
+      - Sword
+      - Light Armour (Leather)
+      - Pistol
+      - Medical Kit
+      - Rations (2 days)
+    gold: "8s"
+    notes: "You served. You were let go. Now you serve yourself."
+  - name: The Guttersneak
+    items:
+      - Dagger (x2)
+      - Lockpick Set
+      - Smoke Bomb
+      - Lantern and Oil (6 hours)
+      - Notebook and Pencil
+    gold: "12s"
+    notes: "Bastion's alleys taught you everything. You slip in, you slip out, and nobody sees your face."
+  - name: The Expedition Hand
+    items:
+      - Staff
+      - Backpack
+      - Rope (60ft)
+      - Grappling Hook
+      - Lantern and Oil (6 hours)
+      - Rations (5 days)
+      - Medical Kit
+    gold: "3s"
+    notes: "You've been beyond the city walls. You know what's out there. That's why you carry a rope."
+  - name: The Hired Gun
+    items:
+      - Musket
+      - Dagger
+      - Powder and Shot (12 shots)
+      - Light Armour (Leather)
+      - Rations (2 days)
+    gold: "10s"
+    notes: "Someone always needs something shot. That someone hired you."
+  - name: The Odd-Touched
+    items:
+      - Dagger
+      - Notebook and Pencil
+      - Waterskin
+      - Rations (2 days)
+      - Pocket Watch
+    gold: "15s"
+    notes: "You touched an Arcanum once. It left a mark you can't quite describe. You look for answers in ruins and in the faces of strangers."
+
+setting:
+  world: |
+    The world of Into the Odd is an industrial age gone strange. Steam-powered machinery fills the factories of great cities. The railways push into wild country. But beneath the progress lies something older and more dangerous: the Odd.
+
+    The Odd is not magic in any comfortable sense. It is the impossible made real — artefacts of unknown manufacture, entities that do not obey natural law, places where the rules of the world simply break down. No one knows where the Odd originates. Scholars argue. Cults worship it. Soldiers try to contain it. Entrepreneurs try to sell it.
+
+    Beyond the cities, the land is strange and underexplored. Ruins of older civilisations dot the wilderness. Expeditions set out and sometimes return — sometimes with wealth, sometimes broken, sometimes not at all.
+
+  bastion: |
+    Bastion is the great city at the centre of the known world — though "great" is a matter of perspective. It is enormous, smog-choked, and teeming with humanity in all its desperation and ambition. The streets are gas-lit at night. The factories run day and night, belching smoke that turns the sky a permanent shade of bruised yellow.
+
+    Bastion is divided into quarters, each with its own character. The Docks bring in goods from across the world. The Merchant Quarter is where money is made and promises are broken. The Works is where the factories stand and the workers toil. The Pale is the old city, where the oldest buildings hide the oldest secrets.
+
+    Bastion has a Governor and an Ironclad Council, but power is messy. Old money, new industry, criminal networks, and military factions all push and pull. The Constabulary keeps order with varying degrees of honesty. Churches minister to the faithful and to the desperate.
+
+    The city swallows people. It chews them up and either spits them out wealthy, ruined, or changed by something they should never have touched.
+
+  the_odd_country: |
+    Outside Bastion's boundaries lies the Odd Country — the unmapped territories where the rules of the city don't apply. The railways reach into parts of it, but the trains don't always run on time, and sometimes they don't come back.
+
+    The wilderness holds ruins of civilisations older than Bastion's records. Strange structures half-buried in hills. Tunnels that go deeper than any mine. Towers that appear on no map. Creatures that do not appear in any natural history. And Arcana — scattered and dangerous, waiting for someone reckless enough to pick them up.
+
+    Expeditions are common and profitable. They are also lethal. Companies are formed, investors found, and parties equipped. The lucky ones return with crates of oddities to sell. The unlucky ones become cautionary tales. The ones who encounter something truly Old — they become something else entirely.
+
+  factions: |
+    Several factions contend for power in and around Bastion:
+
+    The Ironclad Council: Bastion's merchant-industrialist ruling body. Pragmatic, profit-driven, and deeply suspicious of anything that disrupts commerce — including the Odd, unless it can be monetised.
+
+    The Constabulary: Bastion's police force. Underfunded, sometimes corrupt, occasionally heroic. They deal with crime, riots, and Arcana incidents with varying levels of success.
+
+    The Church of the Pale: An old institution that venerates the city's founding and the "Pale Fire" — a metaphor, most believe, for human ingenuity and moral will. Some high clergy have seen things that suggest the Pale Fire is not entirely metaphorical.
+
+    The Expedition Companies: Organisations that fund and outfit expeditions beyond the city walls. The most prominent include Harwick & Sons (ruthless, efficient), the Scholars' Alliance (academic, idealistic, dangerous), and the Iron Compact (military, secretive).
+
+    The Odd Cults: Scattered groups who worship or seek to commune with entities or phenomena from beyond the known. The Constabulary considers them dangerous. They are usually correct.
+
+  arcana_overview: |
+    Arcana are objects, creatures, or phenomena that do not conform to natural law. They are found in ruins, retrieved from deep underground, occasionally delivered by entities who don't explain themselves.
+
+    No one fully understands how Arcana work. They cannot be reliably manufactured, though many have tried. Each Arcanum is unique in its effects and usually in its risks.
+
+    Some Arcana are subtle — a lens that shows what isn't there, a key that opens any lock. Others are dramatic — a weapon that kills what it touches, a substance that alters the mind permanently. The worst are things that change the wielder in ways they don't notice until it's too late.
+
+    Arcana are valuable. They are also illegal to own without a Council permit, which is expensive and rarely granted. This has made a thriving black market.
+
+dice_tables:
+  encounters:
+    - "A Constabulary patrol passes, suspicious of anyone out at this hour."
+    - "A dishevelled expedition survivor stumbles into view, muttering about something they found underground."
+    - "A street vendor selling hot food — the smell is genuine comfort in this grim place."
+    - "A scuffle nearby: two figures struggling over something small and apparently worth fighting over."
+    - "Something moves in the shadows just at the edge of sight — then it's gone."
+    - "A recruiting agent for one of the Expedition Companies eyes the party with professional interest."
+  arcana_quirks:
+    - "It hums at a frequency just below hearing — you feel it in your teeth."
+    - "Animals avoid it. Dogs flee. Birds go silent when it is near."
+    - "The Arcanum is always slightly warm to the touch, regardless of temperature."
+    - "It appears in your dreams. It has been there for weeks."
+    - "Looking at it too long gives you a headache behind your left eye."
+    - "You notice it is slightly different each time you look away and look back — never enough to point at, but enough to unsettle you."
+
 opening_hooks:
-  - title: "The Sunken Station"
-    description: "A pneumatic transit station collapsed into the Under three years ago. Someone has started sending parcels back up through the tubes. The return address is impossible."
-  - title: "The Cartographer's Commission"
-    description: "A guild pays well for accurate maps of unexplored Ruin sections. You have a map. It's wrong in ways that shouldn't be possible."
-  - title: "The Arcana Heist"
-    description: "A collector has an Arcanum that doesn't belong to them. The original owner — or what they've become — wants it back and hires you as an intermediary."
+  - title: "The Recovered Package"
+    description: "A crate addressed to a name you recognise arrived at the Docks without explanation. The sender is listed as deceased. Inside is something wrapped in oilcloth that pulses faintly with warmth. Someone else is looking for it."
+  - title: "The Factory Incident"
+    description: "Three workers on the night shift at Harwick's iron foundry did not come in this morning. The foreman is offering money — real money — to anyone who'll go in and find out what happened to them. The day workers refused after seeing what was left on the floor near the third furnace."
+  - title: "Below the Pale"
+    description: "A sealed section of Bastion's old undercity was breached last week during renovation work. The Constabulary closed it off. An anonymous note slipped under your door says there's a way in through the old tannery on Veil Street, and that what's down there is worth more than you've earned in a year — if you're fast."
+
 mood:
-  suggested_theme: electric
+  suggested_theme: parchment

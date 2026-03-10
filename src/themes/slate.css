@@ -1,0 +1,16 @@
+/* Slate — Cold Steel
+   Deep blue-grey with pale steel-blue accents. Serif body text.
+   Clean, cool, and focused — like a well-kept journal. */
+.theme-slate {
+  --color-bg: #090e14;
+  --color-surface: #101820;
+  --color-border: #1e2d40;
+  --color-primary: #5aa0cc;
+  --color-text: #cce0f0;
+  --color-text-muted: #5c7e9a;
+  --color-user-bubble: #142030;
+  --color-assistant-bubble: #0c1620;
+  --font-body: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --border-radius: 0.5rem;
+}

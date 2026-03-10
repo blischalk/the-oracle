@@ -1,0 +1,16 @@
+/* Terminal — Phosphor Screen
+   Classic soft green on near-black. Monospace throughout.
+   The glow of an old CRT — nostalgic, focused, precise. */
+.theme-terminal {
+  --color-bg: #050e05;
+  --color-surface: #091409;
+  --color-border: #163816;
+  --color-primary: #33cc55;
+  --color-text: #c8f0c8;
+  --color-text-muted: #5a9e5a;
+  --color-user-bubble: #0e280e;
+  --color-assistant-bubble: #070e07;
+  --font-body: 'Courier New', 'Lucida Console', Consolas, monospace;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --border-radius: 0;
+}
