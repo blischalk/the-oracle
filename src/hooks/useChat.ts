@@ -1,24 +1,46 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useCampaignStore } from "../stores/campaignStore";
 import { useSettingsStore } from "../stores/settingsStore";
+import { useNarration } from "./useNarration";
 
 export function useChat() {
-  const { messages, isSending, sendMessage, error } = useCampaignStore();
+  const { messages, isSending, sendMessage, error, activeCampaignId, isRequestingGreeting } = useCampaignStore();
   const { settings } = useSettingsStore();
+  const { speak, stop } = useNarration();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastUserMessageRef = useRef<HTMLDivElement>(null);
   const bottomSpacerRef = useRef<HTMLDivElement>(null);
   const lastMessageCountRef = useRef(0);
+  const prevCampaignIdRef = useRef<string | null>(null);
+  const prevIsRequestingGreetingRef = useRef(false);
 
-  // When the user sends a message, scroll so their message sits at the top of the
-  // scroll container. The GM's response then appears below and the user can read
-  // down at their own pace without being yanked away.
-  //
-  // The spacer div at the bottom of the message list is expanded to the container's
-  // full height before scrolling. This increases scrollHeight so that scrollTop can
-  // be set high enough to place the user's message at the very top of the viewport —
-  // without the spacer, scrollTop is already at its maximum when the user's message
-  // is the last element, so any further scroll is silently clamped to zero.
+  // When the active campaign changes, scroll to the bottom of the loaded history.
+  useEffect(() => {
+    if (!activeCampaignId || activeCampaignId === prevCampaignIdRef.current) return;
+    prevCampaignIdRef.current = activeCampaignId;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const container = scrollContainerRef.current;
+        if (container) container.scrollTop = container.scrollHeight;
+      });
+    });
+  }, [activeCampaignId]);
+
+  // Scroll to bottom when the GM greeting arrives.
+  useEffect(() => {
+    const greetingJustArrived = prevIsRequestingGreetingRef.current && !isRequestingGreeting;
+    prevIsRequestingGreetingRef.current = isRequestingGreeting;
+    if (!greetingJustArrived) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const container = scrollContainerRef.current;
+        if (container) container.scrollTop = container.scrollHeight;
+      });
+    });
+  }, [isRequestingGreeting]);
+
+  // Scroll the user's message to the top when sent so the GM response appears below.
+  // Also narrate new GM responses when narration is enabled.
   useEffect(() => {
     const count = messages.length;
     if (count === 0) return;
@@ -26,10 +48,12 @@ export function useChat() {
     const prevCount = lastMessageCountRef.current;
     lastMessageCountRef.current = count;
 
+    const gmJustResponded = lastMessage.role === "assistant" && count > prevCount;
+    if (gmJustResponded) speak(lastMessage.content);
+
     const userJustSent = lastMessage.role === "user" && count > prevCount;
     if (!userJustSent) return;
 
-    // Wait for the browser to finish painting the new message before measuring.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const container = scrollContainerRef.current;
@@ -37,7 +61,6 @@ export function useChat() {
         const spacer = bottomSpacerRef.current;
         if (!container || !userMsg) return;
 
-        // Expand spacer so scrollHeight grows enough to allow the scroll target.
         if (spacer) spacer.style.height = `${container.clientHeight}px`;
 
         const containerTop = container.getBoundingClientRect().top;
@@ -48,11 +71,15 @@ export function useChat() {
         }
       });
     });
-  }, [messages]);
+  }, [messages, speak]);
 
-  function submit(content: string) {
-    sendMessage(content, settings.active_provider_id, settings.active_model_id);
-  }
+  const submit = useCallback(
+    (content: string) => {
+      stop();
+      sendMessage(content, settings.active_provider_id, settings.active_model_id);
+    },
+    [stop, sendMessage, settings.active_provider_id, settings.active_model_id]
+  );
 
   return { messages, isSending, submit, error, scrollContainerRef, lastUserMessageRef, bottomSpacerRef };
 }

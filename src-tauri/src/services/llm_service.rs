@@ -14,6 +14,7 @@ use crate::providers::llm_provider::{
 use crate::providers::microsoft_copilot::MicrosoftCopilotProvider;
 use crate::providers::ollama::OllamaProvider;
 use crate::providers::openai::OpenAiProvider;
+use crate::providers::opencode::OpenCodeProvider;
 
 const MAX_TOOL_ITERATIONS: usize = 10;
 
@@ -47,6 +48,9 @@ impl LlmService {
 
         let ollama = Arc::new(OllamaProvider::new());
         providers.insert(ollama.provider_id().to_string(), ollama);
+
+        let opencode = Arc::new(OpenCodeProvider::new());
+        providers.insert(opencode.provider_id().to_string(), opencode);
 
         Self {
             providers,

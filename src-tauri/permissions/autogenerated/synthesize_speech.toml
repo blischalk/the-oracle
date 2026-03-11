@@ -1,0 +1,8 @@
+[[permission]]
+identifier = "allow-synthesize-speech"
+description = "Enables the synthesize_speech command without any pre-configured scope."
+commands.allow = ["synthesize_speech"]
+
+[[permission]]
+identifier = "deny-synthesize-speech"
+commands.deny = ["synthesize_speech"]

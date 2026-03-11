@@ -1,6 +1,7 @@
 import { useUiStore } from "../../stores/uiStore";
 import { LlmProviderSelector } from "./LlmProviderSelector";
 import { ThemeSelector } from "./ThemeSelector";
+import { NarrationSettings } from "./NarrationSettings";
 import { openUserSystemsFolder } from "../../services/campaignService";
 
 const sectionDivider: React.CSSProperties = {
@@ -59,6 +60,10 @@ export function SettingsPanel() {
 
         <div style={sectionDivider}>
           <ThemeSelector />
+        </div>
+
+        <div style={sectionDivider}>
+          <NarrationSettings />
         </div>
 
         <div style={sectionDivider}>

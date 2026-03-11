@@ -182,8 +182,15 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
     const { activeCampaignId, messages } = get();
     if (!activeCampaignId || requestedGreetingCampaignIds.has(activeCampaignId)) return;
 
+    // Only send a greeting for brand-new campaigns. Resuming an existing
+    // campaign already has the full history visible — no LLM call needed.
+    if (messages.length > 0) {
+      requestedGreetingCampaignIds.add(activeCampaignId);
+      return;
+    }
+
     requestedGreetingCampaignIds.add(activeCampaignId);
-    const kind: campaignService.GreetingKind = messages.length === 0 ? "new" : "resume";
+    const kind: campaignService.GreetingKind = "new";
     set({ isRequestingGreeting: true, error: null });
 
     try {

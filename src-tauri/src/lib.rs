@@ -15,6 +15,7 @@ use commands::llm_commands::{
     suggest_campaign_name, validate_api_key,
 };
 use commands::settings_commands::{get_settings, open_user_systems_folder, save_settings};
+use commands::tts_commands::synthesize_speech;
 
 use keychain::keychain_service::KeychainService;
 use persistence::campaign_repository::{CampaignRepository, MessageRepository};
@@ -75,6 +76,7 @@ pub fn run() {
             save_api_key,
             get_api_key,
             delete_api_key,
+            synthesize_speech,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

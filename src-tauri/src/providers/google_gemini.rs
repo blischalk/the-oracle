@@ -7,9 +7,13 @@ use super::llm_provider::{ChatMessage, LlmError, LlmProvider, LlmResponse, Model
 const GEMINI_API_BASE: &str =
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
+const GEMINI_MODELS_URL: &str =
+    "https://generativelanguage.googleapis.com/v1beta/models";
+
 pub struct GoogleGeminiProvider {
     client: Client,
     base_url: String,
+    models_url: String,
 }
 
 impl GoogleGeminiProvider {
@@ -17,20 +21,29 @@ impl GoogleGeminiProvider {
         Self {
             client: Client::new(),
             base_url: GEMINI_API_BASE.to_string(),
+            models_url: GEMINI_MODELS_URL.to_string(),
         }
     }
 
     #[cfg(test)]
     pub fn with_base_url(base_url: String) -> Self {
+        // base_url pattern: "http://server/v1beta/models/{model}:generateContent"
+        // models_url strips the per-model suffix to get the list endpoint.
+        let models_url = base_url.replace("/{model}:generateContent", "");
         Self {
             client: Client::new(),
+            models_url,
             base_url,
         }
     }
 
-    fn build_url(&self, model_id: &str, api_key: &str) -> String {
+    fn build_generate_url(&self, model_id: &str, api_key: &str) -> String {
         let url = self.base_url.replace("{model}", model_id);
         format!("{url}?key={api_key}")
+    }
+
+    fn build_models_url(&self, api_key: &str) -> String {
+        format!("{}?key={api_key}", self.models_url)
     }
 }
 
@@ -81,6 +94,33 @@ struct GeminiUsageMetadata {
     prompt_token_count: u32,
     #[serde(rename = "candidatesTokenCount")]
     candidates_token_count: u32,
+}
+
+/// Envelope returned by the Gemini API on error.
+#[derive(Debug, Deserialize)]
+struct GeminiErrorEnvelope {
+    error: GeminiErrorBody,
+}
+
+#[derive(Debug, Deserialize)]
+struct GeminiErrorBody {
+    message: String,
+}
+
+/// Returns true when a Gemini error body is specifically about the API key
+/// being invalid, as opposed to other 400-class errors (wrong model ID,
+/// malformed request, quota exhausted on a per-project basis, etc.).
+fn is_invalid_key_error(body: &str) -> bool {
+    let lower = body.to_lowercase();
+    lower.contains("api key not valid")
+        || lower.contains("api_key_invalid")
+        || lower.contains("invalid api key")
+}
+
+fn extract_error_message(body: &str) -> String {
+    serde_json::from_str::<GeminiErrorEnvelope>(body)
+        .map(|e| e.error.message)
+        .unwrap_or_else(|_| body.to_string())
 }
 
 fn extract_system_instruction(messages: &[ChatMessage]) -> Option<GeminiSystemInstruction> {
@@ -143,13 +183,13 @@ impl LlmProvider for GoogleGeminiProvider {
                 context_window: 1_000_000,
             },
             ModelDescriptor {
-                id: "gemini-2.0-flash".to_string(),
-                display_name: "Gemini 2.0 Flash".to_string(),
+                id: "gemini-2.5-flash".to_string(),
+                display_name: "Gemini 2.5 Flash".to_string(),
                 context_window: 1_000_000,
             },
             ModelDescriptor {
-                id: "gemini-2.5-flash".to_string(),
-                display_name: "Gemini 2.5 Flash".to_string(),
+                id: "gemini-2.0-flash".to_string(),
+                display_name: "Gemini 2.0 Flash".to_string(),
                 context_window: 1_000_000,
             },
         ]
@@ -161,7 +201,7 @@ impl LlmProvider for GoogleGeminiProvider {
         model_id: &str,
         api_key: &str,
     ) -> Result<LlmResponse, LlmError> {
-        let url = self.build_url(model_id, api_key);
+        let url = self.build_generate_url(model_id, api_key);
         let request_body = build_gemini_request(messages);
 
         let http_response = self
@@ -175,21 +215,18 @@ impl LlmProvider for GoogleGeminiProvider {
 
         let status = http_response.status();
 
-        if status == reqwest::StatusCode::UNAUTHORIZED
-            || status == reqwest::StatusCode::FORBIDDEN
-            || status == reqwest::StatusCode::BAD_REQUEST
-        {
-            return Err(LlmError::InvalidApiKey);
-        }
-
         if status == reqwest::StatusCode::TOO_MANY_REQUESTS {
             return Err(LlmError::RateLimited);
         }
 
         if !status.is_success() {
-            let error_body = http_response.text().await.unwrap_or_default();
+            let body = http_response.text().await.unwrap_or_default();
+            if status == reqwest::StatusCode::UNAUTHORIZED || is_invalid_key_error(&body) {
+                return Err(LlmError::InvalidApiKey);
+            }
             return Err(LlmError::ProviderError(format!(
-                "HTTP {status}: {error_body}"
+                "HTTP {status}: {}",
+                extract_error_message(&body)
             )));
         }
 
@@ -213,36 +250,46 @@ impl LlmProvider for GoogleGeminiProvider {
         })
     }
 
+    /// Validates the key by calling the models list endpoint — a lightweight
+    /// GET that returns 200 for any valid key and a clear error for invalid ones,
+    /// avoiding the ambiguous 400 responses that chat completions can return.
     async fn validate_api_key(&self, key: &str) -> Result<bool, LlmError> {
-        let url = self.build_url("gemini-2.0-flash", key);
-        let request_body = build_gemini_request(vec![ChatMessage::user("Hi")]);
+        let url = self.build_models_url(key);
 
         let http_response = self
             .client
-            .post(&url)
-            .header("Content-Type", "application/json")
-            .json(&request_body)
+            .get(&url)
             .send()
             .await
             .map_err(|error| LlmError::NetworkError(error.to_string()))?;
 
         let status = http_response.status();
 
-        if status == reqwest::StatusCode::BAD_REQUEST
-            || status == reqwest::StatusCode::UNAUTHORIZED
-            || status == reqwest::StatusCode::FORBIDDEN
-        {
+        if status.is_success() {
+            return Ok(true);
+        }
+
+        let body = http_response.text().await.unwrap_or_default();
+
+        // A valid key that hits a permission boundary (e.g. project billing not
+        // enabled) should not be reported as invalid — surface the real reason.
+        if status == reqwest::StatusCode::UNAUTHORIZED || is_invalid_key_error(&body) {
             return Ok(false);
         }
 
-        Ok(status.is_success())
+        // Any other non-success (403 quota, 429, 5xx) means the key itself is
+        // probably fine but something else is wrong.
+        Err(LlmError::ProviderError(format!(
+            "HTTP {status}: {}",
+            extract_error_message(&body)
+        )))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wiremock::matchers::{method, path_regex};
+    use wiremock::matchers::{method, path, path_regex, query_param};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
     fn successful_gemini_response() -> serde_json::Value {
@@ -251,11 +298,7 @@ mod tests {
                 {
                     "content": {
                         "role": "model",
-                        "parts": [
-                            {
-                                "text": "Hello, adventurer!"
-                            }
-                        ]
+                        "parts": [{ "text": "Hello, adventurer!" }]
                     },
                     "finishReason": "STOP"
                 }
@@ -264,6 +307,26 @@ mod tests {
                 "promptTokenCount": 10,
                 "candidatesTokenCount": 5,
                 "totalTokenCount": 15
+            }
+        })
+    }
+
+    fn invalid_key_error_body() -> serde_json::Value {
+        serde_json::json!({
+            "error": {
+                "code": 400,
+                "message": "API key not valid. Please pass a valid API key.",
+                "status": "INVALID_ARGUMENT"
+            }
+        })
+    }
+
+    fn model_not_found_error_body() -> serde_json::Value {
+        serde_json::json!({
+            "error": {
+                "code": 404,
+                "message": "models/gemini-bad-model is not found for API version v1beta.",
+                "status": "NOT_FOUND"
             }
         })
     }
@@ -285,16 +348,105 @@ mod tests {
             mock_server.uri()
         ));
 
-        let messages = vec![ChatMessage::user("Hello")];
-
         let response = provider
-            .send_message(messages, "gemini-2.0-flash", "test-key")
+            .send_message(vec![ChatMessage::user("Hello")], "gemini-2.0-flash", "test-key")
             .await
             .expect("send_message should succeed");
 
         assert_eq!(response.content, "Hello, adventurer!");
         assert_eq!(response.input_tokens, 10);
         assert_eq!(response.output_tokens, 5);
+    }
+
+    #[tokio::test]
+    async fn send_message_returns_invalid_key_error_when_body_says_so() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .and(path_regex(r".*generateContent.*"))
+            .respond_with(
+                ResponseTemplate::new(400).set_body_json(invalid_key_error_body()),
+            )
+            .mount(&mock_server)
+            .await;
+
+        let provider = GoogleGeminiProvider::with_base_url(format!(
+            "{}/v1beta/models/{{model}}:generateContent",
+            mock_server.uri()
+        ));
+
+        let err = provider
+            .send_message(vec![ChatMessage::user("Hello")], "gemini-2.0-flash", "bad-key")
+            .await
+            .expect_err("should fail with invalid key");
+
+        assert!(matches!(err, LlmError::InvalidApiKey));
+    }
+
+    #[tokio::test]
+    async fn send_message_returns_provider_error_for_non_key_400() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .and(path_regex(r".*generateContent.*"))
+            .respond_with(
+                ResponseTemplate::new(404).set_body_json(model_not_found_error_body()),
+            )
+            .mount(&mock_server)
+            .await;
+
+        let provider = GoogleGeminiProvider::with_base_url(format!(
+            "{}/v1beta/models/{{model}}:generateContent",
+            mock_server.uri()
+        ));
+
+        let err = provider
+            .send_message(vec![ChatMessage::user("Hello")], "gemini-bad-model", "valid-key")
+            .await
+            .expect_err("should fail with provider error");
+
+        assert!(matches!(err, LlmError::ProviderError(_)));
+    }
+
+    #[tokio::test]
+    async fn validate_api_key_returns_true_when_models_endpoint_succeeds() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/v1beta/models"))
+            .and(query_param("key", "valid-key"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "models": []
+            })))
+            .mount(&mock_server)
+            .await;
+
+        let provider = GoogleGeminiProvider::with_base_url(format!(
+            "{}/v1beta/models/{{model}}:generateContent",
+            mock_server.uri()
+        ));
+
+        assert!(provider.validate_api_key("valid-key").await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn validate_api_key_returns_false_for_invalid_key_body() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/v1beta/models"))
+            .respond_with(
+                ResponseTemplate::new(400).set_body_json(invalid_key_error_body()),
+            )
+            .mount(&mock_server)
+            .await;
+
+        let provider = GoogleGeminiProvider::with_base_url(format!(
+            "{}/v1beta/models/{{model}}:generateContent",
+            mock_server.uri()
+        ));
+
+        assert!(!provider.validate_api_key("bad-key").await.unwrap());
     }
 
     #[test]
@@ -322,8 +474,16 @@ mod tests {
         let provider = GoogleGeminiProvider::new();
         let models = provider.available_models();
         assert_eq!(models.len(), 3);
-        assert!(models.iter().any(|m| m.id == "gemini-2.5-pro"));
+        assert!(models.iter().any(|m| m.display_name == "Gemini 2.5 Pro"));
         assert!(models.iter().any(|m| m.id == "gemini-2.0-flash"));
-        assert!(models.iter().any(|m| m.id == "gemini-2.5-flash"));
+        assert!(models.iter().any(|m| m.display_name == "Gemini 2.5 Flash"));
+    }
+
+    #[test]
+    fn is_invalid_key_error_matches_known_google_messages() {
+        assert!(is_invalid_key_error("API key not valid. Please pass a valid API key."));
+        assert!(is_invalid_key_error(r#"{"error":{"message":"API key not valid"}}"#));
+        assert!(!is_invalid_key_error("models/gemini-bad is not found"));
+        assert!(!is_invalid_key_error("Request contains an invalid argument."));
     }
 }

@@ -59,8 +59,11 @@ fn track_story_thread_tool() -> ToolDefinition {
         description: "Add or update a story thread (quest, mystery, goal, or complication). \
                       Call this whenever a new plot thread opens or its status changes. \
                       If a thread with the same title already exists it will be updated. \
-                      Use status='potential' for foreshadowed hooks, 'active' for ongoing threads, \
-                      and 'completed' when resolved."
+                      Use status='potential' for foreshadowed hooks, 'active' for ongoing threads. \
+                      IMPORTANT: whenever the narrative resolves a thread — the goal is achieved, \
+                      the mystery is solved, the enemy is defeated, the complication ends — you MUST \
+                      call this tool with status='completed' in that same response. Do not wait for \
+                      the player to mark it manually."
             .to_string(),
         parameters: serde_json::json!({
             "type": "object",

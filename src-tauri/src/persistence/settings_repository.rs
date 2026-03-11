@@ -9,6 +9,11 @@ const KEY_ACTIVE_PROVIDER_ID: &str = "active_provider_id";
 const KEY_ACTIVE_MODEL_ID: &str = "active_model_id";
 const KEY_THEME: &str = "theme";
 const KEY_IS_FULLSCREEN: &str = "is_fullscreen";
+const KEY_NARRATION_ENABLED: &str = "narration_enabled";
+const KEY_NARRATION_RATE: &str = "narration_rate";
+const KEY_NARRATION_VOICE_URI: &str = "narration_voice_uri";
+const KEY_TTS_PROVIDER: &str = "tts_provider";
+const KEY_TTS_OPENAI_VOICE: &str = "tts_openai_voice";
 
 pub struct SettingsRepository {
     connection: Arc<Mutex<Connection>>,
@@ -41,11 +46,33 @@ impl SettingsRepository {
 
         let is_fullscreen = is_fullscreen_str == "true";
 
+        let narration_enabled_str =
+            read_key(&connection, KEY_NARRATION_ENABLED)?.unwrap_or_else(|| "false".to_string());
+        let narration_enabled = narration_enabled_str == "true";
+
+        let narration_rate_str =
+            read_key(&connection, KEY_NARRATION_RATE)?.unwrap_or_else(|| "1.0".to_string());
+        let narration_rate = narration_rate_str.parse::<f32>().unwrap_or(1.0);
+
+        let narration_voice_uri =
+            read_key(&connection, KEY_NARRATION_VOICE_URI)?.unwrap_or_default();
+
+        let tts_provider = read_key(&connection, KEY_TTS_PROVIDER)?
+            .unwrap_or_else(|| "system".to_string());
+
+        let tts_openai_voice = read_key(&connection, KEY_TTS_OPENAI_VOICE)?
+            .unwrap_or_else(|| "nova".to_string());
+
         Ok(AppSettings {
             active_provider_id,
             active_model_id,
             theme,
             is_fullscreen,
+            narration_enabled,
+            narration_rate,
+            narration_voice_uri,
+            tts_provider,
+            tts_openai_voice,
         })
     }
 
@@ -68,6 +95,27 @@ impl SettingsRepository {
                 "false"
             },
         )?;
+        upsert_key(
+            &connection,
+            KEY_NARRATION_ENABLED,
+            if settings.narration_enabled {
+                "true"
+            } else {
+                "false"
+            },
+        )?;
+        upsert_key(
+            &connection,
+            KEY_NARRATION_RATE,
+            &settings.narration_rate.to_string(),
+        )?;
+        upsert_key(
+            &connection,
+            KEY_NARRATION_VOICE_URI,
+            &settings.narration_voice_uri,
+        )?;
+        upsert_key(&connection, KEY_TTS_PROVIDER, &settings.tts_provider)?;
+        upsert_key(&connection, KEY_TTS_OPENAI_VOICE, &settings.tts_openai_voice)?;
 
         Ok(())
     }
@@ -119,6 +167,11 @@ mod tests {
         assert_eq!(settings.active_model_id, defaults.active_model_id);
         assert_eq!(settings.theme, defaults.theme);
         assert_eq!(settings.is_fullscreen, defaults.is_fullscreen);
+        assert_eq!(settings.narration_enabled, defaults.narration_enabled);
+        assert_eq!(settings.narration_rate, defaults.narration_rate);
+        assert_eq!(settings.narration_voice_uri, defaults.narration_voice_uri);
+        assert_eq!(settings.tts_provider, defaults.tts_provider);
+        assert_eq!(settings.tts_openai_voice, defaults.tts_openai_voice);
     }
 
     #[test]
@@ -129,6 +182,11 @@ mod tests {
             active_model_id: "claude-sonnet-4-5".to_string(),
             theme: "dark".to_string(),
             is_fullscreen: true,
+            narration_enabled: false,
+            narration_rate: 1.0,
+            narration_voice_uri: "".to_string(),
+            tts_provider: "system".to_string(),
+            tts_openai_voice: "nova".to_string(),
         };
 
         repository.save(&settings).unwrap();
@@ -138,6 +196,9 @@ mod tests {
         assert_eq!(retrieved.active_model_id, "claude-sonnet-4-5");
         assert_eq!(retrieved.theme, "dark");
         assert!(retrieved.is_fullscreen);
+        assert!(!retrieved.narration_enabled);
+        assert_eq!(retrieved.narration_rate, 1.0);
+        assert_eq!(retrieved.narration_voice_uri, "");
     }
 
     #[test]
@@ -148,6 +209,11 @@ mod tests {
             active_model_id: "claude-opus-4-5".to_string(),
             theme: "default".to_string(),
             is_fullscreen: false,
+            narration_enabled: false,
+            narration_rate: 1.0,
+            narration_voice_uri: "".to_string(),
+            tts_provider: "system".to_string(),
+            tts_openai_voice: "nova".to_string(),
         };
 
         repository.save(&settings).unwrap();

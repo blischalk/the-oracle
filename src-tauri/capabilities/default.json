@@ -32,6 +32,7 @@
     "allow-save-api-key",
     "allow-get-api-key",
     "allow-delete-api-key",
+    "allow-synthesize-speech",
     "dialog:default"
   ]
 }

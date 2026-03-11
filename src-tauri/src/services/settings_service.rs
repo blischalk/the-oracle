@@ -61,6 +61,11 @@ mod tests {
             active_model_id: "claude-sonnet-4-5".to_string(),
             theme: "dark".to_string(),
             is_fullscreen: true,
+            narration_enabled: false,
+            narration_rate: 1.0,
+            narration_voice_uri: "".to_string(),
+            tts_provider: "system".to_string(),
+            tts_openai_voice: "nova".to_string(),
         };
 
         service.save_settings(&updated).unwrap();
