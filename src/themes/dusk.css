@@ -1,0 +1,21 @@
+/* Dusk — Golden Hour
+   Deep twilight purple-black warmed by amber-gold accents and soft lavender text.
+   The moment just after sunset — mysterious, unhurried, and beautiful.
+   Works well for fae, mythological, or high-fantasy campaigns.
+   Garamond's classical proportions complement the timeless mood. */
+.theme-dusk {
+  --color-bg: #0e0b16;
+  --color-surface: #16121f;
+  --color-border: #2e2248;
+  --color-primary: #c4903a;
+  --color-text: #e8e0f8;
+  --color-text-muted: #7868a0;
+  --color-user-bubble: #1e1838;
+  --color-assistant-bubble: #110e1c;
+  --font-body: 'Garamond', 'EB Garamond', 'Cormorant Garamond', 'Palatino Linotype', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.1875rem;
+  --line-height-body: 1.9;
+  --border-radius: 0.375rem;
+  --bold-gradient: linear-gradient(120deg, #c4903a, #f0c870);
+}

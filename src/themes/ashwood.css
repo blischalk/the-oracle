@@ -1,0 +1,20 @@
+/* Ashwood — Sunlit Study
+   The only light theme. Warm cream paper, forest-green ink, rich brown shadow.
+   Like reading a beautifully typeset hardback in a window seat on a grey afternoon.
+   Baskerville gives the text an authoritative, classic-novel quality. */
+.theme-ashwood {
+  --color-bg: #f5f0e8;
+  --color-surface: #ede6d6;
+  --color-border: #c8b898;
+  --color-primary: #3d6b3a;
+  --color-text: #1e1a14;
+  --color-text-muted: #7a6a50;
+  --color-user-bubble: #dfd8c8;
+  --color-assistant-bubble: #ece6d8;
+  --font-body: 'Baskerville', 'Baskerville Old Face', 'Garamond', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.125rem;
+  --line-height-body: 1.85;
+  --border-radius: 0.25rem;
+  --bold-gradient: linear-gradient(120deg, #3d6b3a, #6aa860);
+}

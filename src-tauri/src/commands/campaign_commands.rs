@@ -1,8 +1,17 @@
+use serde::Serialize;
 use tauri::State;
 
 use crate::domain::campaign::{Campaign, CampaignState, Message};
 use crate::domain::rpg_system::RpgSystem;
 use crate::AppState;
+
+const PAGE_SIZE: usize = 50;
+
+#[derive(Serialize)]
+pub struct MessagesPage {
+    pub messages: Vec<Message>,
+    pub has_more: bool,
+}
 
 #[tauri::command]
 pub fn list_campaigns(state: State<AppState>) -> Result<Vec<Campaign>, String> {
@@ -70,6 +79,21 @@ pub fn get_messages(campaign_id: String, state: State<AppState>) -> Result<Vec<M
         .campaign_service
         .get_messages(&campaign_id)
         .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn get_messages_page(
+    campaign_id: String,
+    before_created_at: Option<String>,
+    state: State<AppState>,
+) -> Result<MessagesPage, String> {
+    let service = &state.campaign_service;
+    let (messages, has_more) = match before_created_at.as_deref() {
+        None => service.get_messages_recent(&campaign_id, PAGE_SIZE),
+        Some(ts) => service.get_messages_before(&campaign_id, ts, PAGE_SIZE),
+    }
+    .map_err(|e| e.to_string())?;
+    Ok(MessagesPage { messages, has_more })
 }
 
 #[tauri::command]

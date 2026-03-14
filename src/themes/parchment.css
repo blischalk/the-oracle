@@ -12,5 +12,8 @@
   --color-assistant-bubble: #1c1206;
   --font-body: 'Palatino Linotype', 'Palatino', 'Book Antiqua', serif;
   --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.125rem;
+  --line-height-body: 1.85;
   --border-radius: 0.25rem;
+  --bold-gradient: linear-gradient(120deg, #d4a44c, #f5cc78);
 }

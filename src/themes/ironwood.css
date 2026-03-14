@@ -1,0 +1,22 @@
+/* Ironwood — Forge & Forest
+   Charcoal-brown darkness with burnished copper accents and warm birch text.
+   The workbench of a craftsman or the interior of a wilderness outpost —
+   rugged, grounded, and deeply tactile. Good for survival, ranger, or
+   low-fantasy campaigns where the world feels physical and earned.
+   Palatino's broad strokes read like text stamped into thick paper. */
+.theme-ironwood {
+  --color-bg: #0e0c09;
+  --color-surface: #181410;
+  --color-border: #352a1c;
+  --color-primary: #b87040;
+  --color-text: #e8d8b8;
+  --color-text-muted: #806040;
+  --color-user-bubble: #281e10;
+  --color-assistant-bubble: #141008;
+  --font-body: 'Palatino Linotype', 'Palatino', 'Book Antiqua', Georgia, serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.125rem;
+  --line-height-body: 1.85;
+  --border-radius: 0.25rem;
+  --bold-gradient: linear-gradient(120deg, #c07838, #f0a858);
+}

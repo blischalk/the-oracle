@@ -42,6 +42,18 @@ export async function getMessages(campaign_id: string): Promise<Message[]> {
   return invoke("get_messages", { campaignId: campaign_id });
 }
 
+export interface MessagesPage {
+  messages: Message[];
+  has_more: boolean;
+}
+
+export async function getMessagesPage(
+  campaignId: string,
+  beforeCreatedAt: string | null
+): Promise<MessagesPage> {
+  return invoke("get_messages_page", { campaignId, beforeCreatedAt });
+}
+
 export async function getCampaignState(campaignId: string): Promise<CampaignState> {
   return invoke("get_campaign_state", { campaignId });
 }

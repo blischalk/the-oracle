@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChat } from "../../hooks/useChat";
 import { useCampaignStore } from "../../stores/campaignStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useUiStore } from "../../stores/uiStore";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
+import { SearchResultsPanel } from "./SearchResultsPanel";
 import { TypingIndicator } from "./TypingIndicator";
 
 function hasCharacterName(data: Record<string, unknown> | null | undefined): boolean {
@@ -34,11 +35,27 @@ function isRecentMessage(msg: { created_at: string }): boolean {
 }
 
 export function ChatWindow() {
-  const { messages, isSending, submit, scrollContainerRef, lastUserMessageRef, bottomSpacerRef } = useChat();
+  const {
+    messages, isSending, submit, scrollContainerRef, lastUserMessageRef,
+    bottomSpacerRef, topSentinelRef, hasMoreMessages, isLoadingOlderMessages,
+    scrollToMessage,
+  } = useChat();
   const { searchQuery, setSearchQuery } = useUiStore();
-  const filtered = searchQuery
-    ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
-    : messages;
+  const [searchDraft, setSearchDraft] = useState("");
+
+  function handleSearchSubmit() {
+    setSearchQuery(searchDraft.trim());
+  }
+
+  function handleClearSearch() {
+    setSearchDraft("");
+    setSearchQuery("");
+  }
+
+  function handleSelectSearchResult(messageId: string) {
+    handleClearSearch();
+    requestAnimationFrame(() => scrollToMessage(messageId));
+  }
 
   // Determine which assistant message should animate. Only the most recent one
   // qualifies, and only when it was just received (not loaded from history).
@@ -143,61 +160,101 @@ export function ChatWindow() {
     <div className="flex flex-col h-full">
       {messages.length > 0 && (
         <div
-          className="flex items-center gap-2 px-4 py-2 flex-shrink-0"
-          style={{ borderBottom: "1px solid var(--color-border)", backgroundColor: "var(--color-surface)" }}
+          className="flex items-center gap-2 flex-shrink-0"
+          style={{ borderBottom: "1px solid var(--color-border)", backgroundColor: "var(--color-surface)", padding: "var(--space-2) var(--space-3)" }}
         >
           <input
-            className="flex-1 text-sm p-1 focus:outline-none bg-transparent"
-            style={{ color: "var(--color-text)", fontFamily: "var(--font-body)" }}
+            className="flex-1 focus:outline-none bg-transparent"
+            style={{
+              color: "var(--color-text)",
+              fontFamily: "var(--font-body)",
+              fontSize: "0.875rem",
+              padding: "var(--space-1) var(--space-2)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--border-radius)",
+              background: "var(--color-bg)",
+            }}
             placeholder="Search messages..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchDraft}
+            onChange={(e) => setSearchDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
           />
-          {searchQuery && (
-            <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-            </span>
-          )}
+          <button
+            type="button"
+            onClick={handleSearchSubmit}
+            style={{
+              padding: "var(--space-1) var(--space-2)",
+              fontSize: "0.8125rem",
+              borderRadius: "var(--border-radius)",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-primary)",
+              color: "var(--color-bg)",
+              cursor: "pointer",
+              fontFamily: "var(--font-body)",
+              flexShrink: 0,
+            }}
+          >
+            Search
+          </button>
           {searchQuery && (
             <button
               type="button"
-              className="text-xs"
-              style={{ color: "var(--color-text-muted)" }}
-              onClick={() => setSearchQuery("")}
+              style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}
+              onClick={handleClearSearch}
+              title="Clear search"
             >
               ✕
             </button>
           )}
         </div>
       )}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4">
-        {error && (
-          <div role="alert" style={errorBannerStyle}>
-            <span>{error}</span>
-            {" "}
-            <button
-              type="button"
-              onClick={clearError}
-              style={{ textDecoration: "underline", background: "none", border: "none", color: "inherit", cursor: "pointer" }}
-              aria-label="Dismiss error"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-        {filtered.map((msg, index) => {
-          const isLastUserMessage =
-            msg.role === "user" &&
-            !filtered.slice(index + 1).some((m) => m.role === "user");
-          return (
-            <div key={msg.id} ref={isLastUserMessage ? lastUserMessageRef : undefined}>
-              <MessageBubble message={msg} isNew={msg.id === animatingMessageId} />
+      {searchQuery ? (
+        <SearchResultsPanel
+          messages={messages}
+          query={searchQuery}
+          onSelectMessage={handleSelectSearchResult}
+        />
+      ) : (
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4">
+          <div ref={topSentinelRef} aria-hidden />
+          {isLoadingOlderMessages && (
+            <div style={{ textAlign: "center", padding: "var(--space-3)", color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
+              Loading earlier messages…
             </div>
-          );
-        })}
-        {(isSending || isRequestingGreeting) && <TypingIndicator />}
-        <div ref={bottomSpacerRef} aria-hidden />
-      </div>
+          )}
+          {!isLoadingOlderMessages && !hasMoreMessages && messages.length > 0 && (
+            <div style={{ textAlign: "center", padding: "var(--space-3)", color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.8125rem" }}>
+              Beginning of conversation
+            </div>
+          )}
+          {error && (
+            <div role="alert" style={errorBannerStyle}>
+              <span>{error}</span>
+              {" "}
+              <button
+                type="button"
+                onClick={clearError}
+                style={{ textDecoration: "underline", background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+                aria-label="Dismiss error"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+          {messages.map((msg, index) => {
+            const isLastUserMessage =
+              msg.role === "user" &&
+              !messages.slice(index + 1).some((m) => m.role === "user");
+            return (
+              <div key={msg.id} id={`msg-${msg.id}`} ref={isLastUserMessage ? lastUserMessageRef : undefined}>
+                <MessageBubble message={msg} isNew={msg.id === animatingMessageId} />
+              </div>
+            );
+          })}
+          {(isSending || isRequestingGreeting) && <TypingIndicator />}
+          <div ref={bottomSpacerRef} aria-hidden />
+        </div>
+      )}
       <MessageInput onSubmit={submit} disabled={isSending || isRequestingGreeting} />
     </div>
   );

@@ -12,5 +12,8 @@
   --color-assistant-bubble: #070e07;
   --font-body: 'Courier New', 'Lucida Console', Consolas, monospace;
   --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 0.9375rem;
+  --line-height-body: 1.7;
   --border-radius: 0;
+  --bold-gradient: linear-gradient(120deg, #33cc55, #99ff66);
 }

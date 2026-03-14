@@ -67,6 +67,24 @@ impl CampaignService {
         self.message_repository.find_by_campaign(campaign_id)
     }
 
+    pub fn get_messages_recent(
+        &self,
+        campaign_id: &str,
+        limit: usize,
+    ) -> anyhow::Result<(Vec<Message>, bool)> {
+        self.message_repository.find_recent(campaign_id, limit)
+    }
+
+    pub fn get_messages_before(
+        &self,
+        campaign_id: &str,
+        before_created_at: &str,
+        limit: usize,
+    ) -> anyhow::Result<(Vec<Message>, bool)> {
+        self.message_repository
+            .find_before(campaign_id, before_created_at, limit)
+    }
+
     pub fn get_campaign_state(&self, campaign_id: &str) -> anyhow::Result<CampaignState> {
         self.campaign_repository
             .find_state(campaign_id)
@@ -208,7 +226,60 @@ fn numeric_stat_labels(rpg_system: &RpgSystem) -> Vec<String> {
 }
 
 fn system_message_for(rpg_system: &RpgSystem) -> ChatMessage {
-    ChatMessage::system(rpg_system.system_prompt.clone())
+    let formatting = "FORMATTING RULE — follow this in every response without exception: \
+         Use **bold** markdown on significant proper nouns as you write them — \
+         every named location (e.g. **The Rusted Lever**, **Greymark Estate**), \
+         every NPC name (e.g. **Marta**, **the Walker**), every named item or artefact \
+         (e.g. **the Whispering Blade**), and every faction or organisation name. \
+         Bold the noun itself, not the surrounding words. \
+         Do not bold ordinary descriptions, adjectives, or full sentences. \
+         If a proper noun appears multiple times in a response, bold it each time.";
+
+    let pacing = "NARRATIVE PACING RULE — follow this in every response without exception: \
+         Never leave the player parked in a passive state. \
+         When the current scene reaches a natural lull — the character sleeps, travels, \
+         eats, waits, or rests — do not end your response there. \
+         Skip forward in time to the next meaningful moment and open it as a vivid new scene. \
+         If the character sleeps, show them waking. If they travel, show them arriving. \
+         If they wait, show what happens while they wait or cut to when the waiting ends. \
+         Every response must leave the player in an active situation with something real \
+         in front of them — a decision, a threat, a person, a discovery — not in a \
+         passive state. The world does not pause. Time moves. Things happen.";
+
+    let continuity = "NARRATIVE CONTINUITY RULE — follow this in every response without exception: \
+         (1) ACKNOWLEDGE THE PLAYER'S INPUT FIRST. The player's message is the cause; your \
+         response is the effect. Every NPC reaction, every scene development, every outcome \
+         must visibly flow from what the player just said or did. \
+         If an NPC asked a question and the player answered it, the NPC must react to that \
+         specific answer before the scene can advance. You may not skip past the player's \
+         input and jump to a result as if they had said nothing. \
+         (2) SHOW THE CHAIN OF EVENTS. Never report an outcome (money received, item found, \
+         deal struck) without first showing the events that caused it. \
+         — If the player receives money, show who gave it, why, and the physical handoff \
+           (e.g. Rook lays out coins on the table) before stating any new total. \
+         — If a deal is made, show the negotiation. If payment is made, show the payment. \
+         — Never open a response with a financial total or item acquisition that has \
+           no visible cause in the same response. \
+         (3) OFF-SCREEN EVENTS. If something happened while the player was absent, \
+         label it as reported information ('Greaves tells you that...'), not direct narration. \
+         The player must always be able to trace exactly how every outcome came to be.";
+
+    let character_creation = "CHARACTER CREATION RULE — critical, no exceptions: \
+         Stats (STR, DEX, WIL, HP, and any other numeric attributes) are rolled ONCE \
+         at the very start of character creation and are permanently fixed from that moment. \
+         They must NEVER be re-rolled, replaced, or changed because the player chooses a kit, \
+         background, archetype, or starting package. \
+         Kit and background selection affects ONLY starting equipment and money — nothing else. \
+         When the player picks a kit: keep every stat exactly as rolled, then list the kit's \
+         gear and update the gold/money field to the kit's starting amount. \
+         If you find yourself generating new stat numbers after a kit is chosen, stop — \
+         you are making an error.";
+
+    let prompt = format!(
+        "{formatting}\n\n{pacing}\n\n{continuity}\n\n{character_creation}\n\n{}",
+        rpg_system.system_prompt
+    );
+    ChatMessage::system(prompt)
 }
 
 fn take_last_n_messages(messages: Vec<Message>, count: usize) -> Vec<Message> {

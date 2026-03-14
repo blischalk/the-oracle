@@ -1,0 +1,22 @@
+/* Silver — Moonlit Manuscript
+   Cool off-white with silver-blue ink and subtle grey shadow.
+   A second light theme — cleaner and more modern than Ashwood,
+   like a freshly printed page under moonlight. Well-suited to
+   mystery, investigation, or urban-fantasy campaigns where clarity matters.
+   Caslon's clean serifs have been used in fine books for three centuries. */
+.theme-silver {
+  --color-bg: #f2f4f8;
+  --color-surface: #e8ecf4;
+  --color-border: #c0c8d8;
+  --color-primary: #3a6090;
+  --color-text: #181e2a;
+  --color-text-muted: #607090;
+  --color-user-bubble: #d8e0ee;
+  --color-assistant-bubble: #eaeff8;
+  --font-body: 'Big Caslon', 'Caslon', 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.125rem;
+  --line-height-body: 1.85;
+  --border-radius: 0.375rem;
+  --bold-gradient: linear-gradient(120deg, #3a6090, #70a8e0);
+}

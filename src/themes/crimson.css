@@ -1,0 +1,20 @@
+/* Crimson — Blood & Shadow
+   Near-black with a deep red heart. Vivid scarlet accent on dark wine ground.
+   Gothic and severe — fitting for horror, vampire, or dark-fantasy campaigns.
+   Garamond's elegant strokes hold up at body size; tight border-radius keeps it sharp. */
+.theme-crimson {
+  --color-bg: #0c0608;
+  --color-surface: #160a0c;
+  --color-border: #3a1018;
+  --color-primary: #c42240;
+  --color-text: #f0d4da;
+  --color-text-muted: #8a4858;
+  --color-user-bubble: #280c14;
+  --color-assistant-bubble: #110608;
+  --font-body: 'Garamond', 'EB Garamond', 'Cormorant Garamond', 'Palatino Linotype', serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.1875rem;
+  --line-height-body: 1.9;
+  --border-radius: 0.125rem;
+  --bold-gradient: linear-gradient(120deg, #e03050, #ff7055);
+}

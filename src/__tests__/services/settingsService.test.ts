@@ -16,7 +16,7 @@ describe("settingsService", () => {
 
   it("saveSettings calls save_settings command", async () => {
     const { invoke } = await import("@tauri-apps/api/core");
-    const settings = { active_provider_id: "anthropic", active_model_id: "claude-opus-4-5", theme: "dungeon", is_fullscreen: false };
+    const settings = { active_provider_id: "anthropic", active_model_id: "claude-opus-4-5", theme: "dungeon", is_fullscreen: false, narration_enabled: false, narration_rate: 1.0, narration_voice_uri: "", tts_provider: "system", tts_openai_voice: "nova" };
     await saveSettings(settings);
     expect(invoke).toHaveBeenCalledWith("save_settings", { settings });
   });

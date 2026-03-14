@@ -47,12 +47,12 @@ describe("campaignStore", () => {
     const fakeCampaignState = { campaign_id: "1", character_data: {}, notes: "", updated_at: "" };
     const fakeRpgSystem = { id: "cairn", name: "Cairn", character_fields: [], opening_hooks: [], mood: { suggested_theme: "dungeon" } };
 
-    // selectCampaign: getCampaign, then getMessages + getCampaignState + getRpgSystem in parallel
+    // selectCampaign: getCampaign, then getMessagesPage + getCampaignState + getRpgSystem in parallel
     mockedInvoke
-      .mockResolvedValueOnce(fakeCampaign)     // get_campaign
-      .mockResolvedValueOnce(fakeMessages)     // get_messages
-      .mockResolvedValueOnce(fakeCampaignState) // get_campaign_state
-      .mockResolvedValueOnce(fakeRpgSystem);   // get_rpg_system
+      .mockResolvedValueOnce(fakeCampaign)                                // get_campaign
+      .mockResolvedValueOnce({ messages: fakeMessages, has_more: false }) // get_messages_page
+      .mockResolvedValueOnce(fakeCampaignState)                           // get_campaign_state
+      .mockResolvedValueOnce(fakeRpgSystem);                              // get_rpg_system
 
     await useCampaignStore.getState().selectCampaign("1");
     expect(useCampaignStore.getState().activeCampaignId).toBe("1");

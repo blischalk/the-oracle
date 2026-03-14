@@ -1,0 +1,21 @@
+/* Seafarer — Deep Water
+   Oceanic near-black with luminous teal-green accents and sea-foam text.
+   The feel of a ship's log written below deck, lantern light on dark oak.
+   Suitable for nautical, coastal, or exploration-heavy campaigns.
+   Optima's humanist strokes read like clean, confident handwriting. */
+.theme-seafarer {
+  --color-bg: #050d12;
+  --color-surface: #0a1820;
+  --color-border: #143040;
+  --color-primary: #1aacb4;
+  --color-text: #c4ecf2;
+  --color-text-muted: #4a8898;
+  --color-user-bubble: #0a2840;
+  --color-assistant-bubble: #071018;
+  --font-body: 'Optima', 'Candara', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1rem;
+  --line-height-body: 1.75;
+  --border-radius: 0.5rem;
+  --bold-gradient: linear-gradient(120deg, #1aacb4, #70e8d8);
+}

@@ -6,8 +6,8 @@ use tauri::Manager;
 
 use commands::campaign_commands::{
     archive_campaign, create_campaign, delete_campaign, get_campaign, get_campaign_state,
-    get_messages, get_rpg_system, list_campaigns, list_rpg_systems, patch_character_data,
-    update_campaign_name,
+    get_messages, get_messages_page, get_rpg_system, list_campaigns, list_rpg_systems,
+    patch_character_data, update_campaign_name,
 };
 use commands::keychain_commands::{delete_api_key, get_api_key, save_api_key};
 use commands::llm_commands::{
@@ -62,6 +62,7 @@ pub fn run() {
             delete_campaign,
             update_campaign_name,
             get_messages,
+            get_messages_page,
             send_chat_message,
             request_gm_greeting,
             extract_character_data,

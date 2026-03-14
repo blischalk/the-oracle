@@ -12,5 +12,8 @@
   --color-assistant-bubble: #160f08;
   --font-body: 'Georgia', 'Times New Roman', serif;
   --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1.0625rem;
+  --line-height-body: 1.8;
   --border-radius: 0.375rem;
+  --bold-gradient: linear-gradient(120deg, #f59e42, #ffd166);
 }

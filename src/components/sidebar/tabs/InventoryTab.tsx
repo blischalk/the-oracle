@@ -1,13 +1,37 @@
 import { useCampaignStore } from "../../../stores/campaignStore";
 import { getFieldTab } from "../fieldTabHelper";
 
-// Splits a raw inventory string (comma- or newline-separated) into individual
-// item strings, discarding blanks and degenerate entries.
+// Splits a raw inventory string into individual item strings.
+// Newlines are first normalized to commas so that items stored with embedded
+// newlines (e.g. "Musket (d10\nbulky)") are treated the same as
+// "Musket (d10, bulky)". Commas inside parentheses are NOT split points —
+// they are part of the item's property list.
 function parseItems(raw: string): string[] {
-  return raw
-    .split(/[\n,]+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && s !== "—");
+  const normalized = raw.replace(/\n/g, ",");
+  const items: string[] = [];
+  let depth = 0;
+  let current = "";
+
+  for (const ch of normalized) {
+    if (ch === "(") {
+      depth++;
+      current += ch;
+    } else if (ch === ")") {
+      depth--;
+      current += ch;
+    } else if (ch === "," && depth === 0) {
+      const trimmed = current.trim();
+      if (trimmed && trimmed !== "—") items.push(trimmed);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+
+  const trimmed = current.trim();
+  if (trimmed && trimmed !== "—") items.push(trimmed);
+
+  return items;
 }
 
 // Collects every inventory field's value into a flat item list.

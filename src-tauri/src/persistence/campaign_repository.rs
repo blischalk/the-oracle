@@ -271,6 +271,65 @@ impl MessageRepository {
         Ok(messages)
     }
 
+    /// Returns the most recent `limit` messages in chronological order, plus
+    /// a `has_more` flag indicating whether older messages exist.
+    pub fn find_recent(&self, campaign_id: &str, limit: usize) -> anyhow::Result<(Vec<Message>, bool)> {
+        let connection = self.connection.lock().unwrap();
+        let fetch = (limit + 1) as i64;
+        let mut statement = connection
+            .prepare(
+                "SELECT id, campaign_id, role, content, created_at, token_count
+                 FROM messages WHERE campaign_id = ?1
+                 ORDER BY created_at DESC LIMIT ?2",
+            )
+            .context("Failed to prepare find_recent statement")?;
+
+        let mut rows = statement
+            .query_map(params![campaign_id, fetch], row_to_message)
+            .context("Failed to query recent messages")?
+            .collect::<Result<Vec<_>, _>>()
+            .context("Failed to map recent message rows")?;
+
+        let has_more = rows.len() > limit;
+        if has_more {
+            rows.pop();
+        }
+        rows.reverse();
+        Ok((rows, has_more))
+    }
+
+    /// Returns up to `limit` messages older than `before_created_at` in
+    /// chronological order, plus a `has_more` flag.
+    pub fn find_before(
+        &self,
+        campaign_id: &str,
+        before_created_at: &str,
+        limit: usize,
+    ) -> anyhow::Result<(Vec<Message>, bool)> {
+        let connection = self.connection.lock().unwrap();
+        let fetch = (limit + 1) as i64;
+        let mut statement = connection
+            .prepare(
+                "SELECT id, campaign_id, role, content, created_at, token_count
+                 FROM messages WHERE campaign_id = ?1 AND created_at < ?2
+                 ORDER BY created_at DESC LIMIT ?3",
+            )
+            .context("Failed to prepare find_before statement")?;
+
+        let mut rows = statement
+            .query_map(params![campaign_id, before_created_at, fetch], row_to_message)
+            .context("Failed to query older messages")?
+            .collect::<Result<Vec<_>, _>>()
+            .context("Failed to map older message rows")?;
+
+        let has_more = rows.len() > limit;
+        if has_more {
+            rows.pop();
+        }
+        rows.reverse();
+        Ok((rows, has_more))
+    }
+
     pub fn count_for_campaign(&self, campaign_id: &str) -> anyhow::Result<u32> {
         let connection = self.connection.lock().unwrap();
         let count: i64 = connection

@@ -5,6 +5,12 @@
 @import "./themes/terminal.css";
 @import "./themes/void.css";
 @import "./themes/slate.css";
+@import "./themes/ashwood.css";
+@import "./themes/crimson.css";
+@import "./themes/seafarer.css";
+@import "./themes/dusk.css";
+@import "./themes/ironwood.css";
+@import "./themes/silver.css";
 
 /* Design tokens for consistent spacing and typography */
 :root {
@@ -33,6 +39,12 @@
   to   { opacity: 1; }
 }
 
+/* Typing indicator dots */
+@keyframes typingPulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50%       { opacity: 1;    transform: scale(1); }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -44,7 +56,7 @@ html, body, #root {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body), system-ui, sans-serif;
-  font-size: 1rem;
+  font-size: var(--font-size-body, 1rem);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
   -webkit-font-smoothing: antialiased;
@@ -111,7 +123,7 @@ textarea.oracle-input {
 /* Prose and chat content: comfortable reading and spacing */
 p,
 .oracle-prose {
-  line-height: var(--line-height-relaxed);
+  line-height: var(--line-height-body, var(--line-height-relaxed));
   letter-spacing: var(--letter-spacing-normal);
 }
 
@@ -201,7 +213,11 @@ p,
 }
 
 .oracle-prose strong {
-  font-weight: 600;
+  font-weight: 700;
+  background: var(--bold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .oracle-prose a {
   color: var(--color-primary);

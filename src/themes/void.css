@@ -12,5 +12,8 @@
   --color-assistant-bubble: #0d0920;
   --font-body: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-body: 1rem;
+  --line-height-body: 1.75;
   --border-radius: 0.75rem;
+  --bold-gradient: linear-gradient(120deg, #b070ff, #ff70e0);
 }

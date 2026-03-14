@@ -8,30 +8,11 @@ interface Props {
   isNew?: boolean;
 }
 
-// Strips markdown syntax for the brief animation window so markers like ** don't
-// appear as literal characters. The text content is identical; only styling differs.
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/\*\*\*(.+?)\*\*\*/gs, "$1")
-    .replace(/\*\*(.+?)\*\*/gs, "$1")
-    .replace(/\*(.+?)\*/gs, "$1")
-    .replace(/___(.+?)___/gs, "$1")
-    .replace(/__(.+?)__/gs, "$1")
-    .replace(/_(.+?)_/gs, "$1")
-    .replace(/`(.+?)`/gs, "$1")
-    .replace(/#{1,6}\s+/gm, "")
-    .replace(/^>\s*/gm, "")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .replace(/\[(.+?)\]\(.+?\)/g, "$1");
-}
-
-// Each word gets a staggered fade-in. The total animation is compressed so it
-// never exceeds MAX_TOTAL_MS — meaning dense responses appear at the same wall-clock
-// speed as short ones, just with tighter word spacing.
-const BASE_STAGGER_MS = 20;
-const WORD_FADE_MS = 150;
-const MAX_TOTAL_MS = 2800;
+// Each paragraph fades in sequentially. Stagger is compressed for very long
+// responses so the total animation never exceeds MAX_TOTAL_MS.
+const PARA_STAGGER_MS = 120;
+const PARA_FADE_MS = 200;
+const MAX_TOTAL_MS = 3000;
 
 interface AnimatedTextProps {
   content: string;
@@ -39,41 +20,41 @@ interface AnimatedTextProps {
 }
 
 function AnimatedText({ content, onComplete }: AnimatedTextProps) {
-  const words = stripMarkdown(content).split(/\s+/).filter(Boolean);
+  const paragraphs = content.split(/\n\n+/).filter((p) => p.trim());
 
-  if (words.length === 0) {
+  if (paragraphs.length === 0) {
     onComplete();
     return null;
   }
 
   const staggerMs =
-    words.length * BASE_STAGGER_MS > MAX_TOTAL_MS
-      ? Math.floor(MAX_TOTAL_MS / words.length)
-      : BASE_STAGGER_MS;
+    paragraphs.length * PARA_STAGGER_MS > MAX_TOTAL_MS
+      ? Math.floor(MAX_TOTAL_MS / paragraphs.length)
+      : PARA_STAGGER_MS;
 
   return (
-    <p style={{ lineHeight: "var(--line-height-relaxed)" }}>
-      {words.map((word, i) => (
-        <span
+    <>
+      {paragraphs.map((para, i) => (
+        <div
           key={i}
           style={{
             opacity: 0,
-            animation: `wordFadeIn ${WORD_FADE_MS}ms both`,
+            animation: `wordFadeIn ${PARA_FADE_MS}ms both`,
             animationDelay: `${i * staggerMs}ms`,
           }}
-          onAnimationEnd={i === words.length - 1 ? onComplete : undefined}
+          onAnimationEnd={i === paragraphs.length - 1 ? onComplete : undefined}
         >
-          {word}{" "}
-        </span>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{para}</ReactMarkdown>
+        </div>
       ))}
-    </p>
+    </>
   );
 }
 
 const bubbleStyle: React.CSSProperties = {
   padding: "var(--space-3)",
-  fontSize: "1.0625rem",
-  lineHeight: "var(--line-height-relaxed)",
+  fontSize: "var(--font-size-body, 1.0625rem)",
+  lineHeight: "var(--line-height-body, var(--line-height-relaxed))",
   border: "1px solid var(--color-border)",
   color: "var(--color-text)",
   fontFamily: "var(--font-body)",
@@ -83,8 +64,6 @@ const bubbleStyle: React.CSSProperties = {
 export function MessageBubble({ message, isNew = false }: Props) {
   const isUser = message.role === "user";
   // Only animate once — on the first render of a new assistant message.
-  // useState initializer runs exactly once at mount, so subsequent re-renders
-  // with isNew=false don't restart the animation.
   const [isAnimating, setIsAnimating] = useState(() => isNew && !isUser);
 
   return (

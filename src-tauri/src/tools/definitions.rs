@@ -158,8 +158,21 @@ fn update_character_sheet_tool(system: &RpgSystem) -> ToolDefinition {
     ToolDefinition {
         name: "update_character_sheet".to_string(),
         description: format!(
-            "Write one or more character sheet fields. Call this immediately after any stat \
-             change (damage, healing, equipment pickup) or during character creation. \
+            "Write one or more character sheet fields. Call this immediately after ANY change \
+             to a tracked value. This includes: \
+             ITEM ACQUISITION — whenever the narrative has the character pick up, find, receive, \
+             loot, steal, or otherwise acquire any item, you MUST append it to the relevant \
+             inventory/equipment field in that same response (do not just narrate the pickup \
+             without updating the sheet); \
+             ITEM LOSS — whenever an item is dropped, consumed, sold, destroyed, or taken; \
+             CURRENCY TRANSACTIONS — any time the character spends, earns, or loses money the \
+             updated amount MUST be written here in the same response; \
+             STAT CHANGES — damage taken, healing received, HP changes; \
+             CHARACTER CREATION — set all initial values when rolling the character. \
+             FORMATTING — when writing list-style fields (inventory, equipment, items), \
+             each entry must be a single line. Use commas to separate an item's properties, \
+             never a newline. Correct: 'Musket (d10, bulky)'. \
+             Wrong: 'Musket (d10\\nbulky)' — that creates broken split list items. \
              You MUST use the exact field names listed here — wrong names are silently rejected. \
              Valid fields for this system: {field_summary}."
         ),

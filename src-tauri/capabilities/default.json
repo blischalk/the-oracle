@@ -18,6 +18,7 @@
     "allow-delete-campaign",
     "allow-update-campaign-name",
     "allow-get-messages",
+    "allow-get-messages-page",
     "allow-send-chat-message",
     "allow-request-gm-greeting",
     "allow-extract-character-data",

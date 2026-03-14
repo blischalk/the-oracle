@@ -23,39 +23,37 @@ function ThreadRow({
   onCycleStatus: () => void;
   onDelete: () => void;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const isCompleted = thread.status === "completed";
   return (
     <div
       style={{
-        padding: "var(--space-2) var(--space-3)",
         borderRadius: "var(--border-radius)",
         border: "1px solid var(--color-border)",
         marginBottom: "var(--space-2)",
         opacity: isCompleted ? 0.6 : 1,
+        overflow: "hidden",
       }}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-text)" }}>
-            {thread.title}
-            <span
-              style={{
-                marginLeft: "var(--space-2)",
-                fontSize: "0.75rem",
-                color: "var(--color-text-muted)",
-                fontWeight: 400,
-              }}
-            >
-              {STATUS_LABELS[thread.status]}
-            </span>
-          </div>
+      <div
+        className="flex items-center justify-between gap-2"
+        style={{ padding: "var(--space-2) var(--space-3)", cursor: thread.description ? "pointer" : "default" }}
+        onClick={() => thread.description && setIsExpanded((v) => !v)}
+      >
+        <div className="flex items-center gap-1 flex-1 min-w-0">
           {thread.description && (
-            <div style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)", marginTop: "2px", wordBreak: "break-word" }}>
-              {thread.description}
-            </div>
+            <span style={{ fontSize: "0.625rem", color: "var(--color-text-muted)", flexShrink: 0 }}>
+              {isExpanded ? "▾" : "▸"}
+            </span>
           )}
+          <span style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-text)" }}>
+            {thread.title}
+          </span>
+          <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 400, flexShrink: 0 }}>
+            {STATUS_LABELS[thread.status]}
+          </span>
         </div>
-        <div className="flex gap-1 flex-shrink-0">
+        <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             onClick={onCycleStatus}
@@ -90,6 +88,18 @@ function ThreadRow({
           </button>
         </div>
       </div>
+      {isExpanded && thread.description && (
+        <div style={{
+          padding: "0 var(--space-3) var(--space-2) var(--space-3)",
+          fontSize: "0.8125rem",
+          color: "var(--color-text-muted)",
+          wordBreak: "break-word",
+          borderTop: "1px solid var(--color-border)",
+          paddingTop: "var(--space-2)",
+        }}>
+          {thread.description}
+        </div>
+      )}
     </div>
   );
 }

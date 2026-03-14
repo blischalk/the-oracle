@@ -13,6 +13,8 @@ interface CampaignStore {
   campaignState: CampaignState | null;
   activeRpgSystem: RpgSystem | null;
   messages: Message[];
+  hasMoreMessages: boolean;
+  isLoadingOlderMessages: boolean;
   isSending: boolean;
   isRequestingGreeting: boolean;
   error: string | null;
@@ -25,6 +27,7 @@ interface CampaignStore {
   deleteCampaign: (id: string) => Promise<void>;
   sendMessage: (content: string, providerId: string, modelId: string) => Promise<void>;
   requestGreeting: (providerId: string, modelId: string) => Promise<void>;
+  loadOlderMessages: () => Promise<void>;
   extractCharacterData: (providerId: string, modelId: string) => Promise<void>;
   patchCharacterData: (patch: Record<string, unknown>) => Promise<void>;
   clearError: () => void;
@@ -37,6 +40,8 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
   campaignState: null,
   activeRpgSystem: null,
   messages: [],
+  hasMoreMessages: false,
+  isLoadingOlderMessages: false,
   isSending: false,
   isRequestingGreeting: false,
   error: null,
@@ -56,8 +61,8 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
   selectCampaign: async (id: string) => {
     try {
       const campaign = await campaignService.getCampaign(id);
-      const [messages, campaignState, rpgSystem] = await Promise.all([
-        campaignService.getMessages(id),
+      const [page, campaignState, rpgSystem] = await Promise.all([
+        campaignService.getMessagesPage(id, null),
         campaignService.getCampaignState(id),
         campaign
           ? campaignService.getRpgSystem(campaign.rpg_system_id)
@@ -66,7 +71,8 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
       set({
         activeCampaignId: id,
         activeCampaign: campaign ?? null,
-        messages,
+        messages: page.messages,
+        hasMoreMessages: page.has_more,
         campaignState,
         activeRpgSystem: rpgSystem ?? null,
       });
@@ -104,6 +110,7 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
         campaignState: null,
         activeRpgSystem: null,
         messages: [],
+        hasMoreMessages: false,
       });
     }
     await get().loadCampaigns();
@@ -120,6 +127,7 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
           campaignState: null,
           activeRpgSystem: null,
           messages: [],
+          hasMoreMessages: false,
         });
       }
       await get().loadCampaigns();
@@ -195,14 +203,38 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
 
     try {
       await campaignService.requestGmGreeting(activeCampaignId, kind, providerId, modelId);
-      const [updated, updatedState] = await Promise.all([
-        campaignService.getMessages(activeCampaignId),
+      const [page, updatedState] = await Promise.all([
+        campaignService.getMessagesPage(activeCampaignId, null),
         campaignService.getCampaignState(activeCampaignId),
       ]);
-      set({ messages: updated, isRequestingGreeting: false, campaignState: updatedState });
+      set({
+        messages: page.messages,
+        hasMoreMessages: page.has_more,
+        isRequestingGreeting: false,
+        campaignState: updatedState,
+      });
     } catch (e) {
       requestedGreetingCampaignIds.delete(activeCampaignId);
       set({ isRequestingGreeting: false, error: String(e) });
+    }
+  },
+
+  loadOlderMessages: async () => {
+    const { activeCampaignId, messages, hasMoreMessages, isLoadingOlderMessages } = get();
+    if (!activeCampaignId || !hasMoreMessages || isLoadingOlderMessages) return;
+
+    const oldestCreatedAt = messages[0]?.created_at ?? null;
+    set({ isLoadingOlderMessages: true });
+
+    try {
+      const page = await campaignService.getMessagesPage(activeCampaignId, oldestCreatedAt);
+      set((state) => ({
+        messages: [...page.messages, ...state.messages],
+        hasMoreMessages: page.has_more,
+        isLoadingOlderMessages: false,
+      }));
+    } catch (e) {
+      set({ isLoadingOlderMessages: false, error: String(e) });
     }
   },
 
