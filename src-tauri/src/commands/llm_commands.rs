@@ -288,7 +288,7 @@ pub async fn extract_character_data(
 
     let conversation: String = messages
         .iter()
-        .take(30)
+        .take(10)
         .map(|m| {
             let role = match m.role {
                 MessageRole::User => "Player",

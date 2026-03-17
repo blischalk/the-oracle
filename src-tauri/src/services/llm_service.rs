@@ -16,7 +16,7 @@ use crate::providers::ollama::OllamaProvider;
 use crate::providers::openai::OpenAiProvider;
 use crate::providers::opencode::OpenCodeProvider;
 
-const MAX_TOOL_ITERATIONS: usize = 10;
+const MAX_TOOL_ITERATIONS: usize = 5;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderInfo {
