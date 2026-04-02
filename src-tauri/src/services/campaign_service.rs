@@ -239,14 +239,32 @@ fn system_message_for(rpg_system: &RpgSystem) -> ChatMessage {
          (2) Show the cause before the effect — never open with money received, items found, \
          or deals struck without showing the scene that produced them; show who paid, why, \
          and the physical handoff before stating any new total. \
-         (3) Off-screen events must be labelled as reported ('Greaves tells you...'), not narrated directly.";
+         (3) Off-screen events must be labelled as reported ('Greaves tells you...'), not narrated directly. \
+         (4) NEVER reference something with 'the' or 'that' unless it was explicitly described \
+         earlier in this conversation. If a person, object, or detail has not been introduced, \
+         introduce it as new ('A figure stands...' not 'The figure moves...'). \
+         Do not infer what must have been in a scene and then refer back to it as established fact — \
+         if you did not write it, it does not exist yet.";
+
+    let mechanics = "MECHANICS — this is the most important rule: you MUST use the dice tools \
+         to resolve uncertain outcomes. NEVER decide the result of a risky action from imagination alone. \
+         The sequence for any action where failure is possible is: \
+         (1) call get_character_sheet to read the relevant stat, \
+         (2) call save_roll against that stat, \
+         (3) narrate the outcome based on what the dice actually returned — success if roll <= stat, failure if roll > stat. \
+         Examples that REQUIRE a save roll before narrating: attacking or being attacked, \
+         prying something open, forcing a door, climbing, jumping, sneaking past someone, \
+         grabbing something under pressure, resisting a hazard, intimidating or persuading under tension. \
+         If you find yourself writing 'you get sent flying' or 'you grab it successfully' without \
+         having called save_roll first, you are making an error. \
+         The player's stats exist to create meaningful risk — use them every time.";
 
     let character_creation = "CHARACTER CREATION: Stats are rolled ONCE and never change when \
          a kit or background is chosen. Kit selection changes only starting equipment and money. \
          Never regenerate stat numbers after a kit is picked.";
 
     let prompt = format!(
-        "{formatting}\n\n{pacing}\n\n{continuity}\n\n{character_creation}\n\n{}",
+        "{formatting}\n\n{pacing}\n\n{continuity}\n\n{mechanics}\n\n{character_creation}\n\n{}",
         rpg_system.system_prompt
     );
     ChatMessage::system(prompt)

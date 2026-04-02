@@ -211,7 +211,10 @@ fn save_roll_tool(system: &RpgSystem) -> ToolDefinition {
     ToolDefinition {
         name: "save_roll".to_string(),
         description: "Roll d20 for a saving throw against a character attribute. \
-                      Returns the roll, the target, and whether it succeeded."
+                      MUST be called before narrating the outcome of any risky or contested action — \
+                      combat, physical feats, resisting harm, acting under pressure. \
+                      Roll <= attribute = success. Roll > attribute = failure. \
+                      Never narrate a risky outcome without calling this first."
             .to_string(),
         parameters: serde_json::json!({
             "type": "object",
