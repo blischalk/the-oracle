@@ -1,3 +1,6 @@
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { visit } from "unist-util-visit";
 import type { Message } from "../../domain/campaign";
 
 interface SearchResult {
@@ -13,44 +16,68 @@ function findMatchingLines(content: string, query: string): string[] {
     .filter((line) => line.toLowerCase().includes(lower));
 }
 
-function HighlightedLine({ line, query }: { line: string; query: string }) {
-  const lower = line.toLowerCase();
+// Remark plugin: splits text nodes around query matches and tags the matching
+// spans as a custom "queryMatch" node so the ReactMarkdown component map can
+// render them as <mark> without needing rehype-raw.
+function createQueryHighlightPlugin(query: string) {
   const lowerQuery = query.toLowerCase();
-  const parts: { text: string; highlighted: boolean }[] = [];
-  let pos = 0;
+  return () => (tree: Parameters<typeof visit>[0]) => {
+    visit(tree, "text", (node: { type: string; value: string }, index, parent) => {
+      if (!parent || index === undefined) return;
+      const text: string = node.value;
+      const lower = text.toLowerCase();
+      const replacement: unknown[] = [];
+      let pos = 0;
 
-  while (pos < line.length) {
-    const idx = lower.indexOf(lowerQuery, pos);
-    if (idx === -1) {
-      parts.push({ text: line.slice(pos), highlighted: false });
-      break;
-    }
-    if (idx > pos) parts.push({ text: line.slice(pos, idx), highlighted: false });
-    parts.push({ text: line.slice(idx, idx + query.length), highlighted: true });
-    pos = idx + query.length;
-  }
+      while (pos < text.length) {
+        const idx = lower.indexOf(lowerQuery, pos);
+        if (idx === -1) {
+          replacement.push({ type: "text", value: text.slice(pos) });
+          break;
+        }
+        if (idx > pos) {
+          replacement.push({ type: "text", value: text.slice(pos, idx) });
+        }
+        replacement.push({ type: "queryMatch", value: text.slice(idx, idx + query.length) });
+        pos = idx + query.length;
+      }
 
+      if (replacement.length > 1 || (replacement[0] as { type: string }).type === "queryMatch") {
+        (parent as { children: unknown[] }).children.splice(index, 1, ...replacement);
+        return index + replacement.length;
+      }
+    });
+  };
+}
+
+// Cast is required because react-markdown's Components type only lists known
+// HTML tags, but we need to handle the custom "queryMatch" node injected by
+// the remark plugin above.
+const queryMatchComponents = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  queryMatch: ({ node }: any) => (
+    <mark
+      style={{
+        backgroundColor: "var(--color-primary)",
+        color: "var(--color-bg)",
+        borderRadius: "2px",
+        padding: "0 2px",
+        fontWeight: 600,
+      }}
+    >
+      {node.value}
+    </mark>
+  ),
+} as unknown as Components;
+
+function HighlightedMarkdownLine({ line, query }: { line: string; query: string }) {
   return (
-    <span>
-      {parts.map((part, i) =>
-        part.highlighted ? (
-          <mark
-            key={i}
-            style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-bg)",
-              borderRadius: "2px",
-              padding: "0 2px",
-              fontWeight: 600,
-            }}
-          >
-            {part.text}
-          </mark>
-        ) : (
-          <span key={i}>{part.text}</span>
-        )
-      )}
-    </span>
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm, createQueryHighlightPlugin(query)]}
+      components={queryMatchComponents}
+    >
+      {line}
+    </ReactMarkdown>
   );
 }
 
@@ -110,7 +137,7 @@ export function SearchResultsPanel({ messages, query, onSelectMessage }: Props) 
           <div style={{ fontSize: "0.875rem", color: "var(--color-text)", lineHeight: "1.5" }}>
             {matchingLines.map((line, i) => (
               <div key={i} style={{ marginBottom: matchingLines.length > 1 ? "2px" : 0 }}>
-                <HighlightedLine line={line} query={query} />
+                <HighlightedMarkdownLine line={line} query={query} />
               </div>
             ))}
           </div>

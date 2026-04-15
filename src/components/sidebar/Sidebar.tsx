@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCampaignStore } from "../../stores/campaignStore";
 import { useUiStore } from "../../stores/uiStore";
@@ -9,6 +10,10 @@ import { InventoryTab } from "./tabs/InventoryTab";
 import { SkillsTab } from "./tabs/SkillsTab";
 import { JournalTab } from "./tabs/JournalTab";
 import { QuestsTab } from "./tabs/QuestsTab";
+
+const MIN_SIDEBAR_WIDTH = 180;
+const MAX_SIDEBAR_WIDTH = 600;
+const DEFAULT_SIDEBAR_WIDTH = 320;
 
 function TabContent({ activeTab }: { activeTab: string }) {
   switch (activeTab) {
@@ -33,6 +38,36 @@ export function Sidebar() {
   const { activeCampaignId } = useCampaignStore();
   const { isSidebarOpen, toggleSidebar, activeSidebarTab, setActiveSidebarTab } = useUiStore();
   const { settings, updateSettings } = useSettingsStore();
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+  const dragState = useRef({ startX: 0, startWidth: 0 });
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    function handleMouseMove(e: MouseEvent) {
+      const delta = e.clientX - dragState.current.startX;
+      const newWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, dragState.current.startWidth + delta));
+      setSidebarWidth(newWidth);
+    }
+
+    function handleMouseUp() {
+      setIsResizing(false);
+    }
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
+
+  function handleResizeStart(e: React.MouseEvent) {
+    dragState.current = { startX: e.clientX, startWidth: sidebarWidth };
+    setIsResizing(true);
+    e.preventDefault();
+  }
 
   async function handleToggleFullscreen() {
     try {
@@ -56,12 +91,12 @@ export function Sidebar() {
     <aside
       className="flex h-full"
       style={{
-        width: isSidebarOpen ? "256px" : "48px",
+        position: "relative",
+        width: isSidebarOpen ? `${sidebarWidth}px` : "48px",
         backgroundColor: "var(--color-surface)",
         borderRight: "1px solid var(--color-border)",
         flexShrink: 0,
-        transition: "width 0.2s ease",
-        overflow: "hidden",
+        transition: isResizing ? "none" : "width 0.2s ease",
       }}
     >
       <SidebarTabBar
@@ -100,6 +135,20 @@ export function Sidebar() {
             <TabContent activeTab={activeSidebarTab} />
           </div>
         </div>
+      )}
+      {isSidebarOpen && (
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: "6px",
+            cursor: "ew-resize",
+            zIndex: 10,
+          }}
+          onMouseDown={handleResizeStart}
+        />
       )}
     </aside>
   );

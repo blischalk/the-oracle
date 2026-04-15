@@ -140,10 +140,10 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
   },
 
   sendMessage: async (content: string, providerId: string, modelId: string) => {
-    const { activeCampaignId, messages } = get();
+    const { activeCampaignId, activeCampaign } = get();
     if (!activeCampaignId) return;
 
-    const wasFirstExchange = messages.length === 0;
+    const nameIsDefault = activeCampaign?.name === "New Adventure";
 
     const userMsg: Message = {
       id: crypto.randomUUID(),
@@ -175,7 +175,8 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
         campaignState: updatedState,
       }));
 
-      if (wasFirstExchange) {
+      const hasEnoughStory = get().messages.length >= 3;
+      if (nameIsDefault && hasEnoughStory) {
         campaignService.suggestCampaignName(activeCampaignId, providerId, modelId).then(
           () => get().loadCampaigns(),
           () => {}

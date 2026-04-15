@@ -45,7 +45,7 @@ pub async fn send_chat_message(
 
     let context_messages = state
         .campaign_service
-        .build_llm_context(&campaign_id, rpg_system)
+        .build_llm_context(&campaign_id, rpg_system, &campaign_state)
         .map_err(|error| error.to_string())?;
 
     let llm_response = state
@@ -124,7 +124,7 @@ pub async fn request_gm_greeting(
 
     let context_messages = state
         .campaign_service
-        .build_greeting_context(&campaign_id, rpg_system, greeting_kind)
+        .build_greeting_context(&campaign_id, rpg_system, &campaign_state, greeting_kind)
         .map_err(|e| e.to_string())?;
 
     let llm_response = state
@@ -216,6 +216,9 @@ pub async fn suggest_campaign_name(
 
     let prompt = format!(
         "Based on this opening of an RPG adventure, suggest a short campaign title (2 to 6 words). \
+         The title should be evocative and atmospheric — draw from the setting, mood, or tone. \
+         Do NOT reveal key plot points, deaths, betrayals, twists, or major secrets. \
+         Prefer titles that hint at mystery or place over titles that summarise the story. \
          Reply with only the title, no quotes or punctuation.\n\n{excerpt}"
     );
 

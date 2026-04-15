@@ -56,14 +56,31 @@ fn track_npc_tool() -> ToolDefinition {
 fn track_story_thread_tool() -> ToolDefinition {
     ToolDefinition {
         name: "track_story_thread".to_string(),
-        description: "Add or update a story thread (quest, mystery, goal, or complication). \
-                      Call this whenever a new plot thread opens or its status changes. \
-                      If a thread with the same title already exists it will be updated. \
-                      Use status='potential' for foreshadowed hooks, 'active' for ongoing threads. \
-                      IMPORTANT: whenever the narrative resolves a thread — the goal is achieved, \
-                      the mystery is solved, the enemy is defeated, the complication ends — you MUST \
-                      call this tool with status='completed' in that same response. Do not wait for \
-                      the player to mark it manually."
+        description: "Track an actionable quest, mystery, or goal — something the player can \
+                      pursue, investigate, or resolve. \
+                      \
+                      A thread MUST be player-actionable: it is something to DO or FIND OUT. \
+                      Good examples: 'Find out who poisoned the king', \
+                      'Save the village before the flood arrives', \
+                      'Locate the stolen shipment before the buyer arrives'. \
+                      \
+                      Do NOT use this tool for lore observations, atmospheric details, NPC backstory, \
+                      or things the player merely witnessed. \
+                      Wrong: 'A strange light pulses from the sealed vault.' \
+                      Right: 'Discover what is inside the sealed vault.' \
+                      Wrong: 'The merchant was found dead at his desk.' \
+                      Right: 'Find out who killed the merchant.' \
+                      \
+                      The title must be a short active phrase starting with a verb: \
+                      Find, Stop, Escape, Discover, Deliver, Protect, etc. \
+                      The description summarises what is known and what is at stake — \
+                      keep it to 1–2 sentences, focused on what the player needs to do next. \
+                      \
+                      If a thread with the same title already exists it will be updated, not duplicated. \
+                      Use status='potential' for hinted hooks not yet in play; \
+                      status='active' for threads the player is actively pursuing. \
+                      IMPORTANT: when a thread resolves — goal achieved, mystery answered, \
+                      enemy defeated — call this tool with status='completed' in that same response."
             .to_string(),
         parameters: serde_json::json!({
             "type": "object",

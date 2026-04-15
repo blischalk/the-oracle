@@ -42,6 +42,17 @@ export function ChatWindow() {
   } = useChat();
   const { searchQuery, setSearchQuery } = useUiStore();
   const [searchDraft, setSearchDraft] = useState("");
+  const [isScrolledFromBottom, setIsScrolledFromBottom] = useState(false);
+
+  function handleChatScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    setIsScrolledFromBottom(el.scrollHeight - el.scrollTop - el.clientHeight > 100);
+  }
+
+  function scrollToBottom() {
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg) scrollToMessage(lastMsg.id);
+  }
 
   function handleSearchSubmit() {
     setSearchQuery(searchDraft.trim());
@@ -134,7 +145,7 @@ export function ChatWindow() {
 
   if (!activeCampaignId) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
+      <div className="flex-1 flex flex-col items-center justify-center" style={{ padding: "var(--space-8, 2rem)" }}>
         {error && (
           <div role="alert" style={errorBannerStyle} className="w-full max-w-xl mb-4">
             <span>{error}</span>
@@ -149,7 +160,7 @@ export function ChatWindow() {
             </button>
           </div>
         )}
-        <p style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "1.0625rem" }}>
+        <p style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "1.0625rem", textAlign: "center", maxWidth: "28rem" }}>
           Select a campaign or create a new one to begin your adventure.
         </p>
       </div>
@@ -208,53 +219,86 @@ export function ChatWindow() {
           )}
         </div>
       )}
-      {searchQuery ? (
-        <SearchResultsPanel
-          messages={messages}
-          query={searchQuery}
-          onSelectMessage={handleSelectSearchResult}
-        />
-      ) : (
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4">
-          <div ref={topSentinelRef} aria-hidden />
-          {isLoadingOlderMessages && (
-            <div style={{ textAlign: "center", padding: "var(--space-3)", color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
-              Loading earlier messages…
-            </div>
-          )}
-          {!isLoadingOlderMessages && !hasMoreMessages && messages.length > 0 && (
-            <div style={{ textAlign: "center", padding: "var(--space-3)", color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.8125rem" }}>
-              Beginning of conversation
-            </div>
-          )}
-          {error && (
-            <div role="alert" style={errorBannerStyle}>
-              <span>{error}</span>
-              {" "}
-              <button
-                type="button"
-                onClick={clearError}
-                style={{ textDecoration: "underline", background: "none", border: "none", color: "inherit", cursor: "pointer" }}
-                aria-label="Dismiss error"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-          {messages.map((msg, index) => {
-            const isLastUserMessage =
-              msg.role === "user" &&
-              !messages.slice(index + 1).some((m) => m.role === "user");
-            return (
-              <div key={msg.id} id={`msg-${msg.id}`} ref={isLastUserMessage ? lastUserMessageRef : undefined}>
-                <MessageBubble message={msg} isNew={msg.id === animatingMessageId} />
+      <div className="flex-1 overflow-hidden" style={{ position: "relative", display: "flex", flexDirection: "column" }}>
+        {searchQuery ? (
+          <SearchResultsPanel
+            messages={messages}
+            query={searchQuery}
+            onSelectMessage={handleSelectSearchResult}
+          />
+        ) : (
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4" onScroll={handleChatScroll}>
+            <div ref={topSentinelRef} aria-hidden />
+            {isLoadingOlderMessages && (
+              <div style={{ textAlign: "center", padding: "var(--space-3)", color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
+                Loading earlier messages…
               </div>
-            );
-          })}
-          {(isSending || isRequestingGreeting) && <TypingIndicator />}
-          <div ref={bottomSpacerRef} aria-hidden />
-        </div>
-      )}
+            )}
+            {!isLoadingOlderMessages && !hasMoreMessages && messages.length > 0 && (
+              <div style={{ textAlign: "center", padding: "var(--space-3)", color: "var(--color-text-muted)", fontFamily: "var(--font-body)", fontSize: "0.8125rem" }}>
+                Beginning of conversation
+              </div>
+            )}
+            {error && (
+              <div role="alert" style={errorBannerStyle}>
+                <span>{error}</span>
+                {" "}
+                <button
+                  type="button"
+                  onClick={clearError}
+                  style={{ textDecoration: "underline", background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+                  aria-label="Dismiss error"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+            {messages.map((msg, index) => {
+              const isLastUserMessage =
+                msg.role === "user" &&
+                !messages.slice(index + 1).some((m) => m.role === "user");
+              return (
+                <div key={msg.id} id={`msg-${msg.id}`} ref={isLastUserMessage ? lastUserMessageRef : undefined}>
+                  <MessageBubble message={msg} isNew={msg.id === animatingMessageId} />
+                </div>
+              );
+            })}
+            {(isSending || isRequestingGreeting) && <TypingIndicator />}
+            <div ref={bottomSpacerRef} aria-hidden />
+          </div>
+        )}
+        {isScrolledFromBottom && !searchQuery && !isSending && !isRequestingGreeting && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            aria-label="Jump to latest message"
+            title="Jump to latest message"
+            style={{
+              position: "absolute",
+              bottom: "var(--space-3)",
+              right: "var(--space-3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "5px 10px 5px 8px",
+              background: "var(--color-surface)",
+              color: "var(--color-text-muted)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "9999px",
+              cursor: "pointer",
+              fontFamily: "var(--font-body)",
+              fontSize: "0.75rem",
+              boxShadow: "0 1px 6px rgba(0,0,0,0.15)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <path d="M2 4l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Latest
+          </button>
+        )}
+      </div>
       <MessageInput onSubmit={submit} disabled={isSending || isRequestingGreeting} />
     </div>
   );

@@ -41,7 +41,8 @@ export function useChat() {
     });
   }, [activeCampaignId]);
 
-  // Scroll to bottom when the GM greeting arrives.
+  // Scroll to the top when the GM greeting arrives for a new campaign,
+  // so the player reads from the beginning of the message.
   useEffect(() => {
     const greetingJustArrived = prevIsRequestingGreetingRef.current && !isRequestingGreeting;
     prevIsRequestingGreetingRef.current = isRequestingGreeting;
@@ -49,7 +50,7 @@ export function useChat() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const container = scrollContainerRef.current;
-        if (container) container.scrollTop = container.scrollHeight;
+        if (container) container.scrollTop = 0;
       });
     });
   }, [isRequestingGreeting]);
