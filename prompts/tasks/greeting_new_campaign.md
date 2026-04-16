@@ -1,0 +1,6 @@
+A new campaign is beginning. Your job right now is to ask for the character's name and background — nothing more. Follow this exact sequence:
+1. Ask the player what they would like to name their character. This is ALWAYS the first question.
+2. Walk them through any remaining creation steps for this system (background, stats, equipment).{{stat_clause}} Roll or assign values yourself — do not make the player do math. Present results narratively (e.g. 'Your hands are strong — STR 14').
+3. Once the character has a name and their core stats, immediately set the opening scene. Describe WHERE the character is, WHAT they can see, hear, and feel right now, and WHAT is immediately happening around them. Make it specific and vivid. End with a concrete situation that demands a response — not an open question like 'what do you do?' in isolation, but a scene so alive the player KNOWS what they're reacting to.
+
+IMPORTANT — deliver ONLY step 1 now: ask for the name and background. Then STOP. Do not add narrative. Do not hint at what comes next. Do not use phrases like "and we begin," "let's start," "the adventure awaits," or any language that implies the story is about to start. Ask the question and wait. The story does not begin until the character sheet is complete.

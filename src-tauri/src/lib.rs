@@ -23,6 +23,7 @@ use persistence::database::Database;
 use persistence::settings_repository::SettingsRepository;
 use services::campaign_service::CampaignService;
 use services::llm_service::LlmService;
+use services::prompt_library::PromptLibrary;
 use services::rpg_system_registry::RpgSystemRegistry;
 use services::settings_service::SettingsService;
 
@@ -91,6 +92,7 @@ fn build_app_state(app_handle: &tauri::AppHandle) -> anyhow::Result<AppState> {
     let settings_repository = Arc::new(SettingsRepository::new(database.connection.clone()));
 
     let rpg_registry = Arc::new(load_rpg_registry(app_handle));
+    let prompt_library = Arc::new(load_prompt_library(app_handle));
 
     let keychain_service = Arc::new(KeychainService::new(database.connection.clone()));
 
@@ -98,6 +100,7 @@ fn build_app_state(app_handle: &tauri::AppHandle) -> anyhow::Result<AppState> {
         campaign_repository,
         message_repository,
         rpg_registry.clone(),
+        prompt_library,
     ));
 
     let llm_service = Arc::new(LlmService::new(keychain_service.clone()));
@@ -140,6 +143,24 @@ fn load_rpg_registry(app_handle: &tauri::AppHandle) -> RpgSystemRegistry {
     RpgSystemRegistry::load_from_directories(&dirs).unwrap_or_else(|error| {
         eprintln!("Warning: could not load RPG systems: {error}");
         RpgSystemRegistry::load_from_directories(&[]).unwrap()
+    })
+}
+
+fn load_prompt_library(app_handle: &tauri::AppHandle) -> PromptLibrary {
+    let path = app_handle
+        .path()
+        .resolve("prompts", BaseDirectory::Resource)
+        .ok()
+        .filter(|p| p.exists())
+        .unwrap_or_else(|| {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("..")
+                .join("prompts")
+        });
+
+    PromptLibrary::load(&path).unwrap_or_else(|error| {
+        eprintln!("Warning: could not load prompt library: {error}");
+        PromptLibrary::empty()
     })
 }
 

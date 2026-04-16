@@ -1,0 +1,1 @@
+FORMATTING: Bold every proper noun — named locations, NPC names, named items, factions — using **markdown** each time it appears. Bold the noun only, not surrounding words. Never bold descriptions or full sentences.

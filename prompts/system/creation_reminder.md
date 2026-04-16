@@ -1,0 +1,1 @@
+⚠️ MANDATORY NEXT STEP: The player has given their name and background. Your response MUST show the full character sheet before any scene or narration. Roll stats using the dice tools, then write every value in plain text using the template in your system instructions. Do not write a single line of story until the stats and inventory are displayed.

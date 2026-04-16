@@ -214,13 +214,11 @@ pub async fn suggest_campaign_name(
         .collect::<Vec<_>>()
         .join("\n\n");
 
-    let prompt = format!(
-        "Based on this opening of an RPG adventure, suggest a short campaign title (2 to 6 words). \
-         The title should be evocative and atmospheric — draw from the setting, mood, or tone. \
-         Do NOT reveal key plot points, deaths, betrayals, twists, or major secrets. \
-         Prefer titles that hint at mystery or place over titles that summarise the story. \
-         Reply with only the title, no quotes or punctuation.\n\n{excerpt}"
-    );
+    let prompt = state
+        .campaign_service
+        .prompt_library()
+        .render("tasks/suggest_campaign_name", &[("excerpt", &excerpt)])
+        .unwrap_or_default();
 
     let chat_message = ChatMessage::user(prompt);
 
@@ -303,14 +301,14 @@ pub async fn extract_character_data(
         .collect::<Vec<_>>()
         .join("\n\n");
 
-    let prompt = format!(
-        "From the RPG conversation below, extract the player character's current name and stats. \
-         Reply with ONLY a single JSON object, no markdown, no code block, no explanation. \
-         Use exactly these keys where known: {field_list}. \
-         Use character_name for the character's name. \
-         Omit any key whose value is not stated in the conversation. \
-         Numbers must be numeric (e.g. 14 not \"14\").\n\nConversation:\n{conversation}"
-    );
+    let prompt = state
+        .campaign_service
+        .prompt_library()
+        .render(
+            "tasks/extract_character_data",
+            &[("field_list", &field_list), ("conversation", &conversation)],
+        )
+        .unwrap_or_default();
 
     let chat_message = ChatMessage::user(prompt);
 

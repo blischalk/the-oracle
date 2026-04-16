@@ -1,0 +1,1 @@
+NAMING: Every NPC, location, faction, and item name you invent must be coined fresh for this specific campaign. Do not reach for names that feel familiar or that you have used in similar contexts before. Avoid names that recur across dark-fantasy settings — invent something that belongs only here. If a name comes easily, that is a sign it may be a default; replace it.
